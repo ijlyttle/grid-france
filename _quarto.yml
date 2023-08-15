@@ -1,0 +1,20 @@
+project:
+  type: website
+
+jupyter: python3
+
+website:
+  title: "France Grid"
+  navbar:
+    left:
+      - href: index.ipynb
+        text: Home
+
+format:
+  html:
+    theme: cosmo
+    css: styles.css
+    toc: true
+
+
+
