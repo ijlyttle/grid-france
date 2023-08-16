@@ -9,6 +9,8 @@ website:
     left:
       - href: index.ipynb
         text: Home
+      - href: generation.ipynb
+        text: Generation
 
 format:
   html:

@@ -43,7 +43,9 @@ jobs:
 
       - name: Render Quarto project
         uses: quarto-dev/quarto-actions/render@v2
-      
+        env: 
+          RTE_FRANCE_BASE64: ${{ secrets.RTE_FRANCE_BASE64 }}
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
@@ -59,7 +61,8 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v3
-        
+
+      # note: before this action can run, must manually configure pages  
       - name: Setup pages
         uses: actions/configure-pages@v3
         
