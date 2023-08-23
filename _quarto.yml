@@ -1,7 +1,12 @@
 project:
   type: website
+  render: 
+    # we want index to render last, as it summarizes all the datasets
+    - "data-*.ipynb"
+    - "index.ipynb"
   resources:
     - "data/*.parquet"
+    - "data/fake_utc/*.parquet"
 
 jupyter: python3
 
@@ -11,8 +16,11 @@ website:
     left:
       - href: index.ipynb
         text: Home
-      - href: generation.ipynb
-        text: Generation
+      - text: Pipeline
+        menu: 
+          - text: Generation
+          - href: data-generation-01-ingest.ipynb
+            text: Ingest
 
 format:
   html:
