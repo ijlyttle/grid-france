@@ -1,0 +1,12 @@
+stages:
+  ingest:
+    cmd: quarto render data-generation-01-ingest.ipynb --execute
+    deps:
+      - data-generation-01-ingest.ipynb
+    outs: 
+      - data/01-ingest/generation.json:
+          persist: true
+    # this step has logic on whether it needs to call the API or not, 
+    # we want to keep the json output in case there was no API call.      
+    always_changed: true
+

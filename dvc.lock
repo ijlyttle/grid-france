@@ -1,0 +1,14 @@
+schema: '2.0'
+stages:
+  ingest:
+    cmd: quarto render data-generation-01-ingest.ipynb --execute
+    deps:
+    - path: data-generation-01-ingest.ipynb
+      hash: md5
+      md5: 19685dea9e4559b2e095cf36283bdb5e
+      size: 5930
+    outs:
+    - path: data/01-ingest/generation.json
+      hash: md5
+      md5: 1cd23d9ed5a97245a01d98a799f6e151
+      size: 1955996

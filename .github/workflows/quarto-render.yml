@@ -39,17 +39,20 @@ jobs:
           python-version: '3.11.2' 
           cache: 'pip'
 
-      - name: Install python deps
+      - name: Install Python deps
         run: pip install -r requirements.txt
 
       - name: Install Quarto
         uses: quarto-dev/quarto-actions/setup@v2
 
+        # curious if this needed in context of DVC pipeline
       - name: Pull data
         run: |
           dvc pull
-          ls -l data/01-ingest 
 
+      - name: Run DVC pipeline
+        run: dvc repro   
+          
       - name: Render Quarto project
         uses: quarto-dev/quarto-actions/render@v2
 
