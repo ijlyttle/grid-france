@@ -5,7 +5,7 @@ stages:
     deps:
     - path: data-generation-01-ingest.ipynb
       hash: md5
-      md5: 19685dea9e4559b2e095cf36283bdb5e
+      md5: 6f91abe8f6af7ad8421e854fe329354d
       size: 5930
     outs:
     - path: data/01-ingest/generation.json
