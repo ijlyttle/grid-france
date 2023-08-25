@@ -1,0 +1,36 @@
+---
+title: Generation Publish
+---
+
+
+```{python}
+import os
+import polars as pl
+from pyprojroot.here import here
+
+```
+
+```{python}
+table = pl.read_parquet(here("data/02-transform/generation.parquet"))
+```
+
+```{python}
+table_fake_utc = table.with_columns(
+    pl.col(["interval_start", "interval_end"]).map(
+        lambda x: x.dt.replace_time_zone(time_zone="UTC")
+    ),
+)
+```
+
+```{python}
+path_standard = here("data/03-publish/standard")
+os.makedirs(path_standard, exist_ok=True)
+table.write_parquet(f"{path_standard}/generation.parquet")
+```
+
+```{python}
+path_fake_utc = here("data/03-publish/fake-utc")
+os.makedirs(path_fake_utc, exist_ok=True)
+table_fake_utc.write_parquet(f"{path_fake_utc}/generation.parquet")
+```
+

@@ -32,9 +32,8 @@ import json
 import functools, itertools
 import polars as pl
 from pyprojroot.here import here
-```
 
-<!-- @format -->
+```
 
 Let's determine the `start_date` and the `end_date` for the request:
 
@@ -77,7 +76,6 @@ print(date_start.isoformat())
 print(date_end.isoformat())
 ```
 
-<!-- @format -->
 
 Then, let's request a token:
 
@@ -92,7 +90,7 @@ auth = requests.post(
 token = auth.json()["access_token"]
 ```
 
-<!-- @format -->
+
 
 We compose a request, gather the response, then pull out the data:
 
@@ -108,7 +106,7 @@ response = requests.get(
 )
 ```
 
-<!-- @format -->
+
 
 Check the response:
 

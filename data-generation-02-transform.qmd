@@ -104,12 +104,5 @@ df.write_parquet(here("data/02-transform/generation.parquet"))
 
 Try out this [link to the parquet file](/data/02-transform/generation.parquet).
 
-```{python}
-df_fake_utc = df.with_columns(
-    pl.col(["interval_start", "interval_end"]).map(
-        lambda x: x.dt.replace_time_zone(time_zone="UTC")
-    ),
-)
-df_fake_utc
-```
+
 

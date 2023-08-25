@@ -1,8 +1,8 @@
 project:
   type: website
   resources:
-    - "data/*.parquet"
-    - "data/fake_utc/*.parquet"
+    - "data/03-publish/standard/*.parquet"
+    - "data/03-publish/fake-utc/*.parquet"
 
 jupyter: python3
 
@@ -13,15 +13,17 @@ website:
   title: "France Grid"
   navbar:
     left:
-      - href: index.qmd
-        text: Home
+      - text: Home
+        href: index.qmd
       - text: Pipeline
         menu: 
           - text: Generation
-          - href: data-generation-01-ingest.qmd
-            text: Ingest
-          - href: data-generation-02-transform.qmd
-            text: Transform
+          - text: Ingest
+            href: data-generation-01-ingest.qmd
+          - text: Transform
+            href: data-generation-02-transform.qmd 
+          - text: Publish
+            href: data-generation-03-publish.qmd
 
 format:
   html:

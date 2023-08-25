@@ -23,8 +23,9 @@ This will also be an opportunity for me to learn how to use
 
 ## Secrets
 
-To interact with the APIs, the code in this report will expect certain environment variables to be set:
+To interact with the APIs and data-storage, the code in this report will expect certain environment variables to be set:
 
+- `AWS_ACCESS_KEY_ID`, `AWS_ACCESS_KEY_SECRET`: can also be set using `aws cli`
 - `RTE_FRANCE_BASE64` base-64 encoding available from RTE application-page
 
 These allow you access to an application (that you will have to configure on your RTE France account); this application will need access to these APIs:
@@ -43,7 +44,7 @@ from pyprojroot.here import here
 ### Generation
 
 ```{python}
-generation = pl.read_parquet(here("data/generation.parquet"))
+generation = pl.read_parquet(here("data/03-publish/standard/generation.parquet"))
 ```
 
 ```{python}
@@ -54,3 +55,17 @@ generation.drop_nulls().groupby(pl.col("type")).agg(
 )
 ```
 
+
+```{python}
+generation_fake_utc = pl.read_parquet(
+    here("data/03-publish/fake-utc/generation.parquet")
+)
+```
+
+```{python}
+generation_fake_utc.drop_nulls().groupby(pl.col("type")).agg(
+    pl.col("interval_start").min(),
+    pl.col("interval_end").max(),
+    pl.count(),
+)
+```

@@ -1,0 +1,11 @@
+{
+  "hash": "66fa26e797bc40f6560c82258110ed5c",
+  "result": {
+    "markdown": "---\ntitle: Generation Publish\n---\n\n::: {.cell execution_count=1}\n``` {.python .cell-code}\nimport os\nimport polars as pl\nfrom pyprojroot.here import here\n```\n:::\n\n\n::: {.cell execution_count=2}\n``` {.python .cell-code}\ntable = pl.read_parquet(here(\"data/02-transform/generation.parquet\"))\n```\n:::\n\n\n::: {.cell execution_count=3}\n``` {.python .cell-code}\ntable_fake_utc = table.with_columns(\n    pl.col([\"interval_start\", \"interval_end\"]).map(\n        lambda x: x.dt.replace_time_zone(time_zone=\"UTC\")\n    ),\n)\n```\n:::\n\n\n::: {.cell execution_count=4}\n``` {.python .cell-code}\npath_standard = here(\"data/03-publish/standard\")\nos.makedirs(path_standard, exist_ok=True)\ntable.write_parquet(f\"{path_standard}/generation.parquet\")\n```\n:::\n\n\n::: {.cell execution_count=5}\n``` {.python .cell-code}\npath_fake_utc = here(\"data/03-publish/fake-utc\")\nos.makedirs(path_fake_utc, exist_ok=True)\ntable_fake_utc.write_parquet(f\"{path_fake_utc}/generation.parquet\")\n```\n:::\n\n\n",
+    "supporting": [
+      "data-generation-03-publish_files"
+    ],
+    "filters": [],
+    "includes": {}
+  }
+}

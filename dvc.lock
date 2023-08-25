@@ -5,8 +5,8 @@ stages:
     deps:
     - path: data-generation-01-ingest.qmd
       hash: md5
-      md5: b9c91eafc1bc69819c06c90c305a907f
-      size: 3002
+      md5: ee38c6b35d64a284a98f18f38de0963b
+      size: 2936
     outs:
     - path: data/01-ingest/generation.json
       hash: md5
@@ -17,14 +17,45 @@ stages:
     deps:
     - path: data-generation-02-transform.qmd
       hash: md5
-      md5: 6ac303425789be8618a8cb226efc9cb3
-      size: 2822
+      md5: 1edd3713177b9173f00597225c400668
+      size: 2645
     - path: data/01-ingest/generation.json
       hash: md5
       md5: 1cd23d9ed5a97245a01d98a799f6e151
       size: 1955996
     outs:
     - path: data/02-transform/generation.parquet
+      hash: md5
+      md5: 6fa8a91f2a1caee31388fc8f44c0671f
+      size: 37462
+  generation-publish:
+    cmd: quarto render data-generation-03-publish.qmd
+    deps:
+    - path: data-generation-03-publish.qmd
+      hash: md5
+      md5: 66fa26e797bc40f6560c82258110ed5c
+      size: 720
+    - path: data/02-transform/generation.parquet
+      hash: md5
+      md5: 6fa8a91f2a1caee31388fc8f44c0671f
+      size: 37462
+    outs:
+    - path: data/03-publish/fake-utc/generation.parquet
+      hash: md5
+      md5: f6f1ca5ac2dc748fc358f370ae26af8e
+      size: 37428
+    - path: data/03-publish/standard/generation.parquet
+      hash: md5
+      md5: 6fa8a91f2a1caee31388fc8f44c0671f
+      size: 37462
+  index:
+    cmd: quarto render index.qmd
+    deps:
+    - path: data/03-publish/fake-utc/generation.parquet
+      hash: md5
+      md5: f6f1ca5ac2dc748fc358f370ae26af8e
+      size: 37428
+    - path: data/03-publish/standard/generation.parquet
       hash: md5
       md5: 6fa8a91f2a1caee31388fc8f44c0671f
       size: 37462

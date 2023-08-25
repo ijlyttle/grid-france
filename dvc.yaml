@@ -10,7 +10,7 @@ stages:
     # this step has logic on whether it needs to call the API or not, 
     # we want to keep the json output in case there was no API call.      
     always_changed: true
-    
+
   generation-transform:
     cmd: quarto render data-generation-02-transform.qmd
     deps:
@@ -19,4 +19,21 @@ stages:
     outs: 
       - data/02-transform/generation.parquet:
           persist: true
+    
+  generation-publish:
+    cmd: quarto render data-generation-03-publish.qmd
+    deps:
+      - data/02-transform/generation.parquet
+      - data-generation-03-publish.qmd
+    outs: 
+      - data/03-publish/standard/generation.parquet:
+          persist: true     
+      - data/03-publish/fake-utc/generation.parquet:
+          persist: true
+    
+  index:
+    cmd: quarto render index.qmd
+    deps:
+      - data/03-publish/standard/generation.parquet
+      - data/03-publish/fake-utc/generation.parquet
 
