@@ -1,0 +1,56 @@
+---
+title: France Grid
+---
+
+The goal of this repository is to execute and document a data pipeline for aspects of the French electrical grid.
+These are data made available publicly via [APIs from RTE France](https://data.rte-france.com/).
+
+I understand [RTE France's terms and conditions](https://data.rte-france.com/cgu) allow for republication, so long as the data are credited to RTE France, and are not distorted. [Open-Meteo](https://open-meteo.com/) offers similar terms-of-use. This effort complies with those terms.
+
+When finished, this site will publish tables as parquet files:
+
+- generation sources, e.g. wind, solar
+- exchanges with other countries, e.g. England, Belgium
+- outdoor temperature in Paris, from [Open-Meteo](https://open-meteo.com/) (I know there's more to France than Paris)
+
+Using GitHub Actions, these tables will be updated on a schedule, likely daily.
+
+This will also be an opportunity for me to learn how to use
+
+- [Quarto](https://quarto.org/) with Python and Jupyter notebooks
+- [Requests](https://requests.readthedocs.io/en/latest/)
+- [Polars](https://www.pola.rs/)
+
+## Secrets
+
+To interact with the APIs, the code in this report will expect certain environment variables to be set:
+
+- `RTE_FRANCE_BASE64` base-64 encoding available from RTE application-page
+
+These allow you access to an application (that you will have to configure on your RTE France account); this application will need access to these APIs:
+
+- [Actual Generation](https://data.rte-france.com/catalog/-/api/generation/Actual-Generation/v1.1)
+- [Physical Flow](https://data.rte-france.com/catalog/-/api/exchanges/Physical-Flow/v1.0)
+
+## Data available
+
+```{python}
+import polars as pl
+from pyprojroot.here import here
+
+```
+
+### Generation
+
+```{python}
+generation = pl.read_parquet(here("data/generation.parquet"))
+```
+
+```{python}
+generation.drop_nulls().groupby(pl.col("type")).agg(
+    pl.col("interval_start").min(),
+    pl.col("interval_end").max(),
+    pl.count(),
+)
+```
+

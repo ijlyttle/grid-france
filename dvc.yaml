@@ -1,12 +1,22 @@
 stages:
-  ingest:
-    cmd: quarto render data-generation-01-ingest.ipynb --execute
+  
+  generation-ingest:
+    cmd: quarto render data-generation-01-ingest.qmd
     deps:
-      - data-generation-01-ingest.ipynb
+      - data-generation-01-ingest.qmd
     outs: 
       - data/01-ingest/generation.json:
           persist: true
     # this step has logic on whether it needs to call the API or not, 
     # we want to keep the json output in case there was no API call.      
     always_changed: true
+    
+  generation-transform:
+    cmd: quarto render data-generation-02-transform.qmd
+    deps:
+      - data/01-ingest/generation.json
+      - data-generation-02-transform.qmd
+    outs: 
+      - data/02-transform/generation.parquet:
+          persist: true
 

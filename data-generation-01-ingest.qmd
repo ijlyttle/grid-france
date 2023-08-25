@@ -1,0 +1,128 @@
+---
+title: Generation Ingest
+jupyter: python3
+---
+
+<!-- @format -->
+
+The eventual goal is to update a parquet file with generation data from the French grid.
+
+This is the **ingest** step:
+
+- Try to read a data file to get start date, use default otherwise.
+- Use minimum of today's date or start-date plus one month as end date.
+- Assemble query, execute for API
+
+In the **transform** step:
+
+- Parse response, concatenate to existing data, write to parquet files for both "standard" and "fake UTC" timestamps
+
+In the **publish** step
+
+- Add to top-level `resources:` in YAML
+
+The generation data is available from 2017-01-01, onwards.
+
+```{python}
+import os
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
+import requests
+import json
+import functools, itertools
+import polars as pl
+from pyprojroot.here import here
+```
+
+<!-- @format -->
+
+Let's determine the `start_date` and the `end_date` for the request:
+
+- the start date will be the larger of:
+
+  - 2017-01-01
+  - the most-recent date in the dataset, less a day
+
+- the end date will be the smaller of:
+  - the start date plus 14 days
+  - the current date
+
+Dates are expressed as midnight, Paris time.
+
+```{python}
+# these feel like parameters
+tz_local = ZoneInfo("Europe/Paris")
+file_transform_meta = here("data/02-transform/generation-meta.json")
+```
+
+```{python}
+# timedelta() seems to use periods rather than intervals;
+# i.e., it takes DST into account and returns same wall-clock time.
+
+date_start = datetime(2017, 1, 1, tzinfo=tz_local)
+
+# if file exists, get most-recent date
+if os.path.isfile(file_transform_meta):
+    1 + 1
+
+date_end = date_start + timedelta(days=14)
+
+# amend date_end if in the future
+date_today = datetime.now(tz_local).replace(hour=0, minute=0, second=0, microsecond=0)
+date_end = min(date_end, date_today)
+```
+
+```{python}
+print(date_start.isoformat())
+print(date_end.isoformat())
+```
+
+<!-- @format -->
+
+Then, let's request a token:
+
+```{python}
+auth = requests.post(
+    "https://digital.iservices.rte-france.com/token/oauth/",
+    headers={
+        "Authorization": f'Basic {os.environ["RTE_FRANCE_BASE64"]}',
+        "Content-Type": "application/x-www-form-urlencoded",
+    },
+)
+token = auth.json()["access_token"]
+```
+
+<!-- @format -->
+
+We compose a request, gather the response, then pull out the data:
+
+```{python}
+endpoint = "https://digital.iservices.rte-france.com/open_api/actual_generation/v1/generation_mix_15min_time_scale"
+
+response = requests.get(
+    f"{endpoint}/?start_date={date_start.isoformat()}&end_date={date_end.isoformat()}",
+    headers={
+        "Host": "digital.iservices.rte-france.com",
+        "Authorization": f"Bearer {token}",
+    },
+)
+```
+
+<!-- @format -->
+
+Check the response:
+
+```{python}
+response.ok
+```
+
+If the response is OK, write out JSON content to file:
+
+```{python}
+if response.ok:
+    array = response.json()["generation_mix_15min_time_scale"]
+
+    with open(here("data/01-ingest/generation.json"), "w") as file:
+        json.dump(array, file)
+```
+

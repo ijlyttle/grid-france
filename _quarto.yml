@@ -1,26 +1,27 @@
 project:
   type: website
-  render: 
-    # we want index to render last, as it summarizes all the datasets
-    - "data-*.ipynb"
-    - "index.ipynb"
   resources:
     - "data/*.parquet"
     - "data/fake_utc/*.parquet"
 
 jupyter: python3
 
+execute: 
+  freeze: true
+  
 website:
   title: "France Grid"
   navbar:
     left:
-      - href: index.ipynb
+      - href: index.qmd
         text: Home
       - text: Pipeline
         menu: 
           - text: Generation
-          - href: data-generation-01-ingest.ipynb
+          - href: data-generation-01-ingest.qmd
             text: Ingest
+          - href: data-generation-02-transform.qmd
+            text: Transform
 
 format:
   html:

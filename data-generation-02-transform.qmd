@@ -1,0 +1,115 @@
+---
+title: Generation Transform
+---
+
+The eventual goal is to update a parquet file with generation data from the French grid.
+
+- Try to read a (deployed) data file to get start date, use default otherwise.
+- Use minimum of today's date or start-date plus one month as end date.
+- Assemble query for API
+- Parse response, concatenate to existing data
+- Write parquet file, add to top-level `resources:` in YAML
+
+The generation data is available from 2017-01-01, onwards.
+
+```{python}
+import os
+import json
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
+import requests
+import functools, itertools
+import polars as pl
+from pyprojroot.here import here
+
+```
+
+Let's determine the `start_date` and the `end_date` for the request:
+
+- the start date will be the larger of:
+
+  - 2017-01-01
+  - the most-recent date in the dataset, less a day
+
+- the end date will be the smaller of:
+  - the start date plus 14 days
+  - the current date
+
+Dates are expressed as midnight, Paris time.
+
+```{python}
+tz_local = ZoneInfo("Europe/Paris")
+```
+
+Let's load in the results from the previous step:
+
+```{python}
+with open(here("data/01-ingest/generation.json"), "r") as file:
+    array = json.load(file)
+```
+
+Here, I use some functional-programming tools (because that's what I know) to make one observation per interval and production-type:
+
+```{python}
+temp = list(
+    map(
+        lambda x: list(
+            map(
+                lambda v: {
+                    "type": x["production_type"],
+                    "interval_start": v["start_date"],
+                    "interval_end": v["end_date"],
+                    "generation": v["value"],
+                },
+                x["values"],
+            )
+        ),
+        array,
+    )
+)
+
+fixed = functools.reduce(itertools.chain, temp)
+```
+
+We're now in a form to convert this to a Polars DataFrame, to parse, etc.
+
+```{python}
+df_raw = pl.DataFrame(fixed)
+```
+
+```{python}
+df = df_raw.with_columns(
+    [
+        pl.col("interval_start")
+        .str.strptime(pl.Datetime("ms"))
+        .dt.convert_time_zone(time_zone="Europe/Paris"),
+        pl.col("interval_end")
+        .str.strptime(pl.Datetime("ms"))
+        .dt.convert_time_zone(time_zone="Europe/Paris"),
+    ]
+)
+```
+
+```{python}
+df.groupby(pl.col("type")).agg(
+    pl.col("interval_start").min(),
+    pl.col("interval_end").max(),
+    pl.col("generation").null_count().alias("null_count"),
+).with_columns(pl.col("interval_start").dt.month().alias("month"))
+```
+
+```{python}
+df.write_parquet(here("data/02-transform/generation.parquet"))
+```
+
+Try out this [link to the parquet file](/data/02-transform/generation.parquet).
+
+```{python}
+df_fake_utc = df.with_columns(
+    pl.col(["interval_start", "interval_end"]).map(
+        lambda x: x.dt.replace_time_zone(time_zone="UTC")
+    ),
+)
+df_fake_utc
+```
+

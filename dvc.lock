@@ -1,14 +1,30 @@
 schema: '2.0'
 stages:
-  ingest:
-    cmd: quarto render data-generation-01-ingest.ipynb --execute
+  generation-ingest:
+    cmd: quarto render data-generation-01-ingest.qmd
     deps:
-    - path: data-generation-01-ingest.ipynb
+    - path: data-generation-01-ingest.qmd
       hash: md5
-      md5: 6f91abe8f6af7ad8421e854fe329354d
-      size: 5930
+      md5: b9c91eafc1bc69819c06c90c305a907f
+      size: 3002
     outs:
     - path: data/01-ingest/generation.json
       hash: md5
       md5: 1cd23d9ed5a97245a01d98a799f6e151
       size: 1955996
+  generation-transform:
+    cmd: quarto render data-generation-02-transform.qmd
+    deps:
+    - path: data-generation-02-transform.qmd
+      hash: md5
+      md5: 6ac303425789be8618a8cb226efc9cb3
+      size: 2822
+    - path: data/01-ingest/generation.json
+      hash: md5
+      md5: 1cd23d9ed5a97245a01d98a799f6e151
+      size: 1955996
+    outs:
+    - path: data/02-transform/generation.parquet
+      hash: md5
+      md5: 6fa8a91f2a1caee31388fc8f44c0671f
+      size: 37462
