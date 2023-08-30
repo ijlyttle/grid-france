@@ -61,5 +61,5 @@ stages:
       size: 37462
     - path: index.qmd
       hash: md5
-      md5: 5e92d3cd5b3610f9bdb92803a27abfa3
-      size: 2645
+      md5: c3703c0c176829efdd11ef7a36d1aeb6
+      size: 2600

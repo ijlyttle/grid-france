@@ -72,10 +72,13 @@ generation_fake_utc.drop_nulls().groupby(pl.col("type")).agg(
 ```
 
 ```{python}
+# | echo: false
 # | output: asis
-result = subprocess.run(["dvc", "dag", "--mermaid"], stdout=subprocess.PIPE)
 print("```{mermaid}")
-print(result.stdout.decode("utf-8"))
+print(
+    subprocess.run(["dvc", "dag", "--mermaid"], stdout=subprocess.PIPE).stdout.decode(
+        "utf-8"
+    )
+)
 print("```")
 ```
-
