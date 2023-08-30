@@ -23,7 +23,7 @@ website:
           - text: Transform
             href: data-generation-02-transform.qmd 
           - text: Publish
-            href: data-generation-03-publish.qmd
+            href: data-generation-99-publish.qmd
 
 format:
   html:

@@ -3,6 +3,10 @@ title: Generation Publish
 ---
 
 
+In the **publish** step
+
+- Add to top-level `resources:` in YAML
+
 ```{python}
 import os
 import polars as pl
@@ -23,13 +27,13 @@ table_fake_utc = table.with_columns(
 ```
 
 ```{python}
-path_standard = here("data/03-publish/standard")
+path_standard = here("data/99-publish/standard")
 os.makedirs(path_standard, exist_ok=True)
 table.write_parquet(f"{path_standard}/generation.parquet")
 ```
 
 ```{python}
-path_fake_utc = here("data/03-publish/fake-utc")
+path_fake_utc = here("data/99-publish/fake-utc")
 os.makedirs(path_fake_utc, exist_ok=True)
 table_fake_utc.write_parquet(f"{path_fake_utc}/generation.parquet")
 ```

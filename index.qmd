@@ -38,13 +38,14 @@ These allow you access to an application (that you will have to configure on you
 ```{python}
 import polars as pl
 from pyprojroot.here import here
+import subprocess
 
 ```
 
 ### Generation
 
 ```{python}
-generation = pl.read_parquet(here("data/03-publish/standard/generation.parquet"))
+generation = pl.read_parquet(here("data/99-publish/standard/generation.parquet"))
 ```
 
 ```{python}
@@ -58,7 +59,7 @@ generation.drop_nulls().groupby(pl.col("type")).agg(
 
 ```{python}
 generation_fake_utc = pl.read_parquet(
-    here("data/03-publish/fake-utc/generation.parquet")
+    here("data/99-publish/fake-utc/generation.parquet")
 )
 ```
 
@@ -69,3 +70,12 @@ generation_fake_utc.drop_nulls().groupby(pl.col("type")).agg(
     pl.count(),
 )
 ```
+
+```{python}
+# | output: asis
+result = subprocess.run(["dvc", "dag", "--mermaid"], stdout=subprocess.PIPE)
+print("```{mermaid}")
+print(result.stdout.decode("utf-8"))
+print("```")
+```
+

@@ -2,13 +2,10 @@
 title: Generation Transform
 ---
 
-The eventual goal is to update a parquet file with generation data from the French grid.
+In the **transform** step:
 
-- Try to read a (deployed) data file to get start date, use default otherwise.
-- Use minimum of today's date or start-date plus one month as end date.
-- Assemble query for API
-- Parse response, concatenate to existing data
-- Write parquet file, add to top-level `resources:` in YAML
+- Parse response, concatenate to existing data, write to parquet files for both "standard" and "fake UTC" timestamps
+
 
 The generation data is available from 2017-01-01, onwards.
 

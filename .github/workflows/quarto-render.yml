@@ -61,6 +61,9 @@ jobs:
         with:
           # hard-coding `_site` feels a little gross, but it works
           path: _site
+
+      # if not pull-request, push data to remote  
+      # if not pull-request, commit back to github    
           
   deploy:
     if: github.event_name != 'pull_request'

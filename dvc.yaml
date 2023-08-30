@@ -21,19 +21,20 @@ stages:
           persist: true
     
   generation-publish:
-    cmd: quarto render data-generation-03-publish.qmd
+    cmd: quarto render data-generation-99-publish.qmd
     deps:
       - data/02-transform/generation.parquet
-      - data-generation-03-publish.qmd
+      - data-generation-99-publish.qmd
     outs: 
-      - data/03-publish/standard/generation.parquet:
+      - data/99-publish/standard/generation.parquet:
           persist: true     
-      - data/03-publish/fake-utc/generation.parquet:
+      - data/99-publish/fake-utc/generation.parquet:
           persist: true
     
   index:
     cmd: quarto render index.qmd
     deps:
-      - data/03-publish/standard/generation.parquet
-      - data/03-publish/fake-utc/generation.parquet
+      - data/99-publish/standard/generation.parquet
+      - data/99-publish/fake-utc/generation.parquet
+      - index.qmd
 

@@ -3,8 +3,6 @@ title: Generation Ingest
 jupyter: python3
 ---
 
-<!-- @format -->
-
 The eventual goal is to update a parquet file with generation data from the French grid.
 
 This is the **ingest** step:
@@ -12,14 +10,6 @@ This is the **ingest** step:
 - Try to read a data file to get start date, use default otherwise.
 - Use minimum of today's date or start-date plus one month as end date.
 - Assemble query, execute for API
-
-In the **transform** step:
-
-- Parse response, concatenate to existing data, write to parquet files for both "standard" and "fake UTC" timestamps
-
-In the **publish** step
-
-- Add to top-level `resources:` in YAML
 
 The generation data is available from 2017-01-01, onwards.
 
