@@ -30,6 +30,8 @@ stages:
           persist: true     
       - data/99-publish/fake-utc/generation.parquet:
           persist: true
+      - data/99-publish/generation-meta.json:
+          persist: true
     
   index:
     cmd: quarto render index.qmd

@@ -17,7 +17,7 @@ Using GitHub Actions, these tables will be updated on a schedule, likely daily.
 
 This will also be an opportunity for me to learn how to use
 
-- [Quarto](https://quarto.org/) with Python and Jupyter notebooks
+- [Quarto](https://quarto.org/) using Python with `.qmd` files
 - [Requests](https://requests.readthedocs.io/en/latest/)
 - [Polars](https://www.pola.rs/)
 
@@ -74,6 +74,8 @@ generation_fake_utc.drop_nulls().groupby(pl.col("type")).agg(
 ```{python}
 # | echo: false
 # | output: asis
+
+# ref: https://github.com/quarto-dev/quarto-cli/discussions/6508
 print("```{mermaid}")
 print(
     subprocess.run(["dvc", "dag", "--mermaid"], stdout=subprocess.PIPE).stdout.decode(

@@ -11,6 +11,7 @@ In the **publish** step
 import os
 import polars as pl
 from pyprojroot.here import here
+import json
 
 ```
 
@@ -38,3 +39,33 @@ os.makedirs(path_fake_utc, exist_ok=True)
 table_fake_utc.write_parquet(f"{path_fake_utc}/generation.parquet")
 ```
 
+## Metadata
+
+Some metadata:
+
+ - `timezone`: should be `"Europe/Paris"`
+ - `interval_end_minimum`: aggregated over type, last 
+
+```{python}
+time_zone = table.get_column("interval_start").dtype.time_zone
+```
+
+For each type, find the latest `interval_end` - then find the earliest among those; this is where the next query will need to start.
+
+```{python}
+interval_end = (
+    table.groupby(pl.col("type"))
+    .agg(pl.col("interval_end").max())
+    .get_column("interval_end")
+    .min()
+)
+```
+
+We write this to a metadata file:
+
+```{python}
+dict = {"time_zone": time_zone, "interval_end": interval_end.isoformat()}
+
+with open(here("data/99-publish/generation-meta.json"), "w") as file:
+    json.dump(dict, file)
+```

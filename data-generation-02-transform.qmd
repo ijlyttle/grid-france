@@ -43,12 +43,14 @@ Let's load in the results from the previous step:
 ```{python}
 with open(here("data/01-ingest/generation.json"), "r") as file:
     array = json.load(file)
+
+table_existing = pl.read_parquet(here("data/99-publish/standard/generation.parquet"))
 ```
 
 Here, I use some functional-programming tools (because that's what I know) to make one observation per interval and production-type:
 
 ```{python}
-temp = list(
+by_type = list(
     map(
         lambda x: list(
             map(
@@ -65,17 +67,17 @@ temp = list(
     )
 )
 
-fixed = functools.reduce(itertools.chain, temp)
+fixed = functools.reduce(itertools.chain, by_type)
 ```
 
 We're now in a form to convert this to a Polars DataFrame, to parse, etc.
 
 ```{python}
-df_raw = pl.DataFrame(fixed)
+table_raw = pl.DataFrame(fixed)
 ```
 
 ```{python}
-df = df_raw.with_columns(
+table = table_raw.with_columns(
     [
         pl.col("interval_start")
         .str.strptime(pl.Datetime("ms"))
@@ -88,7 +90,7 @@ df = df_raw.with_columns(
 ```
 
 ```{python}
-df.groupby(pl.col("type")).agg(
+table.groupby(pl.col("type")).agg(
     pl.col("interval_start").min(),
     pl.col("interval_end").max(),
     pl.col("generation").null_count().alias("null_count"),
@@ -96,10 +98,18 @@ df.groupby(pl.col("type")).agg(
 ```
 
 ```{python}
-df.write_parquet(here("data/02-transform/generation.parquet"))
+table_combined = (
+    pl.concat([table_existing, table])
+    .unique(subset=["interval_start", "type"])
+    .sort(by=["interval_start", "type"])
+)
 ```
 
-Try out this [link to the parquet file](/data/02-transform/generation.parquet).
+
+```{python}
+table_combined.write_parquet(here("data/02-transform/generation.parquet"))
+```
+
 
 
 

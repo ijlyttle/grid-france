@@ -5,61 +5,65 @@ stages:
     deps:
     - path: data-generation-01-ingest.qmd
       hash: md5
-      md5: decde7564f7c9736f5496b87b0d90402
-      size: 2706
+      md5: 78a76ad659ef036bfcb0e83f010c5359
+      size: 3068
     outs:
     - path: data/01-ingest/generation.json
       hash: md5
-      md5: 1cd23d9ed5a97245a01d98a799f6e151
-      size: 1955996
+      md5: 67d433da3cc9f6cc35c13f6cd8b28022
+      size: 1956651
   generation-transform:
     cmd: quarto render data-generation-02-transform.qmd
     deps:
     - path: data-generation-02-transform.qmd
       hash: md5
-      md5: a01ab16907fc9a29d0654ee170177339
-      size: 2418
+      md5: dac6530f3edc8be8a944740f2933edd7
+      size: 2621
     - path: data/01-ingest/generation.json
       hash: md5
-      md5: 1cd23d9ed5a97245a01d98a799f6e151
-      size: 1955996
+      md5: 67d433da3cc9f6cc35c13f6cd8b28022
+      size: 1956651
     outs:
     - path: data/02-transform/generation.parquet
       hash: md5
-      md5: 6fa8a91f2a1caee31388fc8f44c0671f
-      size: 37462
+      md5: b7b131d47527dee6be69d10c6d070cc0
+      size: 126282
   generation-publish:
     cmd: quarto render data-generation-99-publish.qmd
     deps:
     - path: data-generation-99-publish.qmd
       hash: md5
-      md5: dba541d474ced09fab0b88e371496618
-      size: 786
+      md5: 05c94f38d7376a4714237be8749813ce
+      size: 1513
     - path: data/02-transform/generation.parquet
       hash: md5
-      md5: 6fa8a91f2a1caee31388fc8f44c0671f
-      size: 37462
+      md5: b7b131d47527dee6be69d10c6d070cc0
+      size: 126282
     outs:
     - path: data/99-publish/fake-utc/generation.parquet
       hash: md5
-      md5: f6f1ca5ac2dc748fc358f370ae26af8e
-      size: 37428
+      md5: 83932b6dcbcfb12dd638a6d8db76c7a0
+      size: 126247
+    - path: data/99-publish/generation-meta.json
+      hash: md5
+      md5: d566351df1f017ce532bfb757de6a64d
+      size: 74
     - path: data/99-publish/standard/generation.parquet
       hash: md5
-      md5: 6fa8a91f2a1caee31388fc8f44c0671f
-      size: 37462
+      md5: b7b131d47527dee6be69d10c6d070cc0
+      size: 126282
   index:
     cmd: quarto render index.qmd
     deps:
     - path: data/99-publish/fake-utc/generation.parquet
       hash: md5
-      md5: f6f1ca5ac2dc748fc358f370ae26af8e
-      size: 37428
+      md5: 83932b6dcbcfb12dd638a6d8db76c7a0
+      size: 126247
     - path: data/99-publish/standard/generation.parquet
       hash: md5
-      md5: 6fa8a91f2a1caee31388fc8f44c0671f
-      size: 37462
+      md5: b7b131d47527dee6be69d10c6d070cc0
+      size: 126282
     - path: index.qmd
       hash: md5
-      md5: c3703c0c176829efdd11ef7a36d1aeb6
-      size: 2600
+      md5: d167ae9978a4738627f43c3343331bb9
+      size: 2663

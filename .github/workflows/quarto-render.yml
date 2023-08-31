@@ -3,8 +3,6 @@
 #  - https://github.com/actions/starter-workflows/blob/main/pages/static.yml
 
 on:
-  push:
-    branches: main
   pull_request:
     branches: main
   # to be able to trigger a manual build
@@ -63,8 +61,19 @@ jobs:
           path: _site
 
       # if not pull-request, push data to remote  
+      - name: Push data
+        if: github.event_name != 'pull_request'        
+        run: dvc push
+
       # if not pull-request, commit back to github    
-          
+      - name: Commit and push repo
+        if: github.event_name != 'pull_request'
+        run: |
+          git config --global user.name 'Ian Lyttle'
+          git config --global user.email 'ijlyttle@users.noreply.github.com'
+          git commit -am "Automated report"
+          git push         
+
   deploy:
     if: github.event_name != 'pull_request'
     needs: build

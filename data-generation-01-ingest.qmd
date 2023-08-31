@@ -41,7 +41,18 @@ Dates are expressed as midnight, Paris time.
 ```{python}
 # these feel like parameters
 tz_local = ZoneInfo("Europe/Paris")
-file_transform_meta = here("data/02-transform/generation-meta.json")
+
+# not including this as a DVC dependency, as this would make things "circular"
+file_transform_meta = here("data/99-publish/generation-meta.json")
+
+# if file exists, get most-recent date
+date_end_previous = None
+if os.path.isfile(file_transform_meta):
+    with open(file_transform_meta, "r") as file:
+        meta = json.load(file)
+        date_end_previous = datetime.fromisoformat(meta.get("interval_end")).astimezone(
+            tz_local
+        )
 ```
 
 ```{python}
@@ -49,10 +60,8 @@ file_transform_meta = here("data/02-transform/generation-meta.json")
 # i.e., it takes DST into account and returns same wall-clock time.
 
 date_start = datetime(2017, 1, 1, tzinfo=tz_local)
-
-# if file exists, get most-recent date
-if os.path.isfile(file_transform_meta):
-    1 + 1
+if date_end_previous is not None:
+    date_start = date_end_previous
 
 date_end = date_start + timedelta(days=14)
 
