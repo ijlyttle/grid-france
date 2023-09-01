@@ -1,8 +1,8 @@
 project:
   type: website
   resources:
-    - "data/03-publish/standard/*.parquet"
-    - "data/03-publish/fake-utc/*.parquet"
+    - "data/99-publish/standard/*.parquet"
+    - "data/99-publish/fake-utc/*.parquet"
 
 jupyter: python3
 
