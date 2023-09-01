@@ -43,7 +43,6 @@ table_fake_utc.write_parquet(f"{path_fake_utc}/generation.parquet")
 
 Some metadata:
 
- - `timezone`: should be `"Europe/Paris"`
  - `interval_end_minimum`: aggregated over type, last 
 
 ```{python}
@@ -64,7 +63,7 @@ interval_end = (
 We write this to a metadata file:
 
 ```{python}
-dict = {"time_zone": time_zone, "interval_end": interval_end.isoformat()}
+dict = {"interval_end": interval_end.isoformat()}
 
 with open(here("data/99-publish/generation-meta.json"), "w") as file:
     json.dump(dict, file)
