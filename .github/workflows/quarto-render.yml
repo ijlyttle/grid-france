@@ -5,6 +5,9 @@
 on:
   pull_request:
     branches: main
+  schedule:
+    # run each day at 03h15 UTC
+    - cron: '15 3 * * *'
   # to be able to trigger a manual build
   workflow_dispatch:
 
