@@ -2,15 +2,15 @@
 title: Generation Transform
 ---
 
+The goal of this pipeline is to update a parquet file with generation data from the French grid.
+
 In the **transform** step:
 
 - Parse response, concatenate to existing data, write to parquet files for both "standard" and "fake UTC" timestamps
 
-
-The generation data is available from 2017-01-01, onwards.
-
 ```{python}
 import os
+import dvc.api
 import json
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
@@ -19,23 +19,6 @@ import functools, itertools
 import polars as pl
 from pyprojroot.here import here
 
-```
-
-Let's determine the `start_date` and the `end_date` for the request:
-
-- the start date will be the larger of:
-
-  - 2017-01-01
-  - the most-recent date in the dataset, less a day
-
-- the end date will be the smaller of:
-  - the start date plus 14 days
-  - the current date
-
-Dates are expressed as midnight, Paris time.
-
-```{python}
-tz_local = ZoneInfo("Europe/Paris")
 ```
 
 Let's load in the results from the previous step:

@@ -2,6 +2,9 @@ stages:
   
   generation-ingest:
     cmd: quarto render data-generation-01-ingest.qmd
+    params: 
+      - dvc-params.yaml:
+        - tz_local
     deps:
       - data-generation-01-ingest.qmd
     outs: 

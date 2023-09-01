@@ -3,18 +3,19 @@ title: Generation Ingest
 jupyter: python3
 ---
 
-The eventual goal is to update a parquet file with generation data from the French grid.
+The goal of this pipeline is to update a parquet file with generation data from the French grid.
 
 This is the **ingest** step:
 
 - Try to read a data file to get start date, use default otherwise.
-- Use minimum of today's date or start-date plus one month as end date.
+- Use minimum of today's date or start-date plus two weeks as end date.
 - Assemble query, execute for API
 
 The generation data is available from 2017-01-01, onwards.
 
 ```{python}
 import os
+import dvc.api
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 import requests
@@ -30,7 +31,7 @@ Let's determine the `start_date` and the `end_date` for the request:
 - the start date will be the larger of:
 
   - 2017-01-01
-  - the most-recent date in the dataset, less a day
+  - the end of the most-recent interval in the dataset
 
 - the end date will be the smaller of:
   - the start date plus 14 days
@@ -39,8 +40,11 @@ Let's determine the `start_date` and the `end_date` for the request:
 Dates are expressed as midnight, Paris time.
 
 ```{python}
-# these feel like parameters
-tz_local = ZoneInfo("Europe/Paris")
+params = dvc.api.params_show("dvc-params.yaml")
+```
+
+```{python}
+tz_local = ZoneInfo(params["tz_local"])
 
 # not including this as a DVC dependency, as this would make things "circular"
 file_transform_meta = here("data/99-publish/generation-meta.json")
@@ -70,11 +74,12 @@ date_today = datetime.now(tz_local).replace(hour=0, minute=0, second=0, microsec
 date_end = min(date_end, date_today)
 ```
 
+Given the context, here are the start and end dates:
+
 ```{python}
 print(date_start.isoformat())
 print(date_end.isoformat())
 ```
-
 
 Then, let's request a token:
 
@@ -89,8 +94,6 @@ auth = requests.post(
 token = auth.json()["access_token"]
 ```
 
-
-
 We compose a request, gather the response, then pull out the data:
 
 ```{python}
@@ -104,8 +107,6 @@ response = requests.get(
     },
 )
 ```
-
-
 
 Check the response:
 
