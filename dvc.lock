@@ -13,8 +13,8 @@ stages:
     outs:
     - path: data/01-ingest/generation.json
       hash: md5
-      md5: 2229c6b44a83169e73bb05fd21e96068
-      size: 1956813
+      md5: f0d0ad529f52d1ad4b5c9b507bf967a2
+      size: 1955947
   generation-transform:
     cmd: quarto render data-generation-02-transform.qmd
     deps:
@@ -24,13 +24,13 @@ stages:
       size: 2302
     - path: data/01-ingest/generation.json
       hash: md5
-      md5: 2229c6b44a83169e73bb05fd21e96068
-      size: 1956813
+      md5: f0d0ad529f52d1ad4b5c9b507bf967a2
+      size: 1955947
     outs:
     - path: data/02-transform/generation.parquet
       hash: md5
-      md5: 99ff6754a2f05a69f1dcb9960e984f93
-      size: 211001
+      md5: 382db6582d788aaf16a90d35a37cffd6
+      size: 252899
   generation-publish:
     cmd: quarto render data-generation-99-publish.qmd
     deps:
@@ -40,32 +40,32 @@ stages:
       size: 1513
     - path: data/02-transform/generation.parquet
       hash: md5
-      md5: 99ff6754a2f05a69f1dcb9960e984f93
-      size: 211001
+      md5: 382db6582d788aaf16a90d35a37cffd6
+      size: 252899
     outs:
     - path: data/99-publish/fake-utc/generation.parquet
       hash: md5
-      md5: 45dcb59cba895bf57874f9b4992b0930
-      size: 210968
+      md5: 7c93ee3e3059032ad289f86df76afbe6
+      size: 252868
     - path: data/99-publish/generation-meta.json
       hash: md5
-      md5: 018ea9939a07c5f9909f77d316b289cb
+      md5: 01eb26d9030b653c602d0284855536e3
       size: 74
     - path: data/99-publish/standard/generation.parquet
       hash: md5
-      md5: 99ff6754a2f05a69f1dcb9960e984f93
-      size: 211001
+      md5: 382db6582d788aaf16a90d35a37cffd6
+      size: 252899
   index:
     cmd: quarto render index.qmd
     deps:
     - path: data/99-publish/fake-utc/generation.parquet
       hash: md5
-      md5: 45dcb59cba895bf57874f9b4992b0930
-      size: 210968
+      md5: 7c93ee3e3059032ad289f86df76afbe6
+      size: 252868
     - path: data/99-publish/standard/generation.parquet
       hash: md5
-      md5: 99ff6754a2f05a69f1dcb9960e984f93
-      size: 211001
+      md5: 382db6582d788aaf16a90d35a37cffd6
+      size: 252899
     - path: index.qmd
       hash: md5
       md5: d167ae9978a4738627f43c3343331bb9
