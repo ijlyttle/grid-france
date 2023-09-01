@@ -16,6 +16,9 @@ stages:
 
   generation-transform:
     cmd: quarto render data-generation-02-transform.qmd
+    params: 
+      - dvc-params.yaml:
+        - tz_local
     deps:
       - data/01-ingest/generation.json
       - data-generation-02-transform.qmd

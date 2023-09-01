@@ -21,6 +21,12 @@ from pyprojroot.here import here
 
 ```
 
+First, parameters:
+
+```{python}
+params = dvc.api.params_show("dvc-params.yaml")
+```
+
 Let's load in the results from the previous step:
 
 ```{python}
@@ -64,21 +70,14 @@ table = table_raw.with_columns(
     [
         pl.col("interval_start")
         .str.strptime(pl.Datetime("ms"))
-        .dt.convert_time_zone(time_zone="Europe/Paris"),
+        .dt.convert_time_zone(time_zone=params["tz_local"]),
         pl.col("interval_end")
         .str.strptime(pl.Datetime("ms"))
-        .dt.convert_time_zone(time_zone="Europe/Paris"),
+        .dt.convert_time_zone(time_zone=params["tz_local"]),
     ]
 )
 ```
 
-```{python}
-table.groupby(pl.col("type")).agg(
-    pl.col("interval_start").min(),
-    pl.col("interval_end").max(),
-    pl.col("generation").null_count().alias("null_count"),
-).with_columns(pl.col("interval_start").dt.month().alias("month"))
-```
 
 ```{python}
 table_combined = (
@@ -88,6 +87,19 @@ table_combined = (
 )
 ```
 
+
+For the combined table, for each type of generation, let's see how many observations and null values are in the table
+
+```{python}
+table_combined.groupby(pl.col("type")).agg(
+    pl.col("interval_start").min(),
+    pl.col("interval_end").max(),
+    pl.col("generation").count().alias("n_observations"),
+    pl.col("generation").null_count().alias("n_observations_null"),
+)
+```
+
+Finally, write the result:
 
 ```{python}
 table_combined.write_parquet(here("data/02-transform/generation.parquet"))
