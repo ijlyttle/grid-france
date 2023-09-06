@@ -39,9 +39,15 @@ Let's determine the `start_date` and the `end_date` for the request:
 
 Dates are expressed as midnight, Paris time.
 
+The timezone is a parameter that we share among multiple files in each of the pipelines. so we read a parameter:
+
 ```{python}
 params = dvc.api.params_show("dvc-params.yaml")
 ```
+
+To get the pipeline started, we read the published metadata, which contains the most-recent valid date.
+Note that although we are reading from this file, we not declare it a dependency in `dvc.yaml`.
+This is because to declare this file would be to create a circular dependency, which DVC would refuse to accept.
 
 ```{python}
 tz_local = ZoneInfo(params["tz_local"])
@@ -59,6 +65,14 @@ if os.path.isfile(file_transform_meta):
         )
 ```
 
+Let's also get the current date (start of today, Paris time):
+
+```{python}
+date_today = datetime.now(tz_local).replace(hour=0, minute=0, second=0, microsecond=0)
+```
+
+We now have enough information to determine the start and end dates for the API call:
+
 ```{python}
 # timedelta() seems to use periods rather than intervals;
 # i.e., it takes DST into account and returns same wall-clock time.
@@ -70,7 +84,6 @@ if date_end_previous is not None:
 date_end = date_start + timedelta(days=14)
 
 # amend date_end if in the future
-date_today = datetime.now(tz_local).replace(hour=0, minute=0, second=0, microsecond=0)
 date_end = min(date_end, date_today)
 ```
 
@@ -81,7 +94,7 @@ print(date_start.isoformat())
 print(date_end.isoformat())
 ```
 
-Then, let's request a token:
+We need to request a token:
 
 ```{python}
 auth = requests.post(

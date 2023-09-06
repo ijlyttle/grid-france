@@ -5,21 +5,22 @@ title: France Grid
 The goal of this repository is to execute and document a data pipeline for aspects of the French electrical grid.
 These are data made available publicly via [APIs from RTE France](https://data.rte-france.com/).
 
-I understand [RTE France's terms and conditions](https://data.rte-france.com/cgu) allow for republication, so long as the data are credited to RTE France, and are not distorted. [Open-Meteo](https://open-meteo.com/) offers similar terms-of-use. This effort complies with those terms.
+I understand [RTE France's terms and conditions](https://data.rte-france.com/cgu) allow for republication, so long as the data are credited to RTE France, and are not distorted. 
 
 When finished, this site will publish tables as parquet files:
 
 - generation sources, e.g. wind, solar
 - exchanges with other countries, e.g. England, Belgium
-- outdoor temperature in Paris, from [Open-Meteo](https://open-meteo.com/) (I know there's more to France than Paris)
+- outdoor temperature in Paris (I know there's more to France than Paris)
 
-Using GitHub Actions, these tables will be updated on a schedule, likely daily.
+Using GitHub Actions, these tables will be updated daily.
 
-This will also be an opportunity for me to learn how to use
+This will also be an opportunity for me to learn to use:
 
-- [Quarto](https://quarto.org/) using Python with `.qmd` files
 - [Requests](https://requests.readthedocs.io/en/latest/)
 - [Polars](https://www.pola.rs/)
+- [DVC](https://dvc.org/)
+- [Quarto](https://quarto.org/) using Python with `.qmd` files
 
 ## Secrets
 
@@ -33,7 +34,8 @@ These allow you access to an application (that you will have to configure on you
 - [Actual Generation](https://data.rte-france.com/catalog/-/api/generation/Actual-Generation/v1.1)
 - [Physical Flow](https://data.rte-france.com/catalog/-/api/exchanges/Physical-Flow/v1.0)
 
-## Data available
+## Data pipeline
+
 
 ```{python}
 import polars as pl
@@ -42,34 +44,7 @@ import subprocess
 
 ```
 
-### Generation
-
-```{python}
-generation = pl.read_parquet(here("data/99-publish/standard/generation.parquet"))
-```
-
-```{python}
-generation.drop_nulls().groupby(pl.col("type")).agg(
-    pl.col("interval_start").min(),
-    pl.col("interval_end").max(),
-    pl.count(),
-)
-```
-
-
-```{python}
-generation_fake_utc = pl.read_parquet(
-    here("data/99-publish/fake-utc/generation.parquet")
-)
-```
-
-```{python}
-generation_fake_utc.drop_nulls().groupby(pl.col("type")).agg(
-    pl.col("interval_start").min(),
-    pl.col("interval_end").max(),
-    pl.count(),
-)
-```
+This flowchart is generated using DVC:
 
 ```{python}
 # | echo: false
@@ -84,3 +59,45 @@ print(
 )
 print("```")
 ```
+
+### Generation
+
+```{python}
+generation = pl.read_parquet(here("data/99-publish/standard/generation.parquet"))
+```
+
+Two files parquet files are published, each with the same information:
+
+ - [Standard](/data/99-publish/standard/generation.parquet)
+ - [Fake-UTC](/data/99-publish/fake-utc/generation.parquet)
+
+The last few observations:
+
+```{python}
+generation.tail()
+```
+
+- `type`: type of generation
+- `interval_start`, `interval_end`: date-times describing the interval
+- `generation`: average (?) of generation during this interval (MW)
+
+We count the number of observations and null values for the generation files (will be the same for both):
+
+```{python}
+generation.groupby(pl.col("type")).agg(
+    pl.col("interval_start").min(),
+    pl.col("interval_end").max(),
+    pl.col("generation").count().alias("n_observations"),
+    pl.col("generation").null_count().alias("n_value_null"),
+)
+```
+
+I don't know, right now, why `"HYDRO"` has one-fewer observation than the others - I'll try to find out!
+
+```{python}
+generation.groupby(pl.col("interval_start")).agg(
+    pl.col("generation").count().alias("n_observations")
+).sort(pl.col("n_observations")).head(2)
+```
+
+I don't think this was at the end of a API call...

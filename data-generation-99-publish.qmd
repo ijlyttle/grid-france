@@ -2,10 +2,10 @@
 title: Generation Publish
 ---
 
+In the **publish** step:
 
-In the **publish** step
-
-- Add to top-level `resources:` in YAML
+- Write out data as parquet files in "standard" and "fake UTC" formats.
+- Write out metadata as a JSON file.
 
 ```{python}
 import os
@@ -19,6 +19,10 @@ import json
 table = pl.read_parquet(here("data/02-transform/generation.parquet"))
 ```
 
+JavaScript does not (yet) have a timezone database available; you can use the timezone of the browser, or you can use UTC.
+The idea here is to use a "fake UTC", by projecting the date-times from their original timezone (`Europe/Paris`) to UTC, preserving the wall-clock time.
+This will help us with any date-time math in JavaScript, but with the price of introducing a gap and a duplication at the daylight-saving time transitions. 
+
 ```{python}
 table_fake_utc = table.with_columns(
     pl.col(["interval_start", "interval_end"]).map(
@@ -26,6 +30,8 @@ table_fake_utc = table.with_columns(
     ),
 )
 ```
+
+We publish both the standard and fake-UTC tables:
 
 ```{python}
 path_standard = here("data/99-publish/standard")
@@ -39,17 +45,9 @@ os.makedirs(path_fake_utc, exist_ok=True)
 table_fake_utc.write_parquet(f"{path_fake_utc}/generation.parquet")
 ```
 
-## Metadata
+We also calculate and write out some metadata:
 
-Some metadata:
-
- - `interval_end_minimum`: aggregated over type, last 
-
-```{python}
-time_zone = table.get_column("interval_start").dtype.time_zone
-```
-
-For each type, find the latest `interval_end` - then find the earliest among those; this is where the next query will need to start.
+ - `interval_end`: latest observation for each `type`, then aggregated using earliest of these.
 
 ```{python}
 interval_end = (
@@ -60,7 +58,7 @@ interval_end = (
 )
 ```
 
-We write this to a metadata file:
+We publish this to a metadata file:
 
 ```{python}
 dict = {"interval_end": interval_end.isoformat()}
