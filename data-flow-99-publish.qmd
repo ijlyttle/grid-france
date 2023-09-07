@@ -1,0 +1,68 @@
+---
+title: Generation Publish
+---
+
+In the **publish** step:
+
+- Write out data as parquet files in "standard" and "fake UTC" formats.
+- Write out metadata as a JSON file.
+
+```{python}
+import os
+import polars as pl
+from pyprojroot.here import here
+import json
+
+```
+
+```{python}
+table = pl.read_parquet(here("data/02-transform/flow.parquet"))
+```
+
+JavaScript does not (yet) have a timezone database available; you can use the timezone of the browser, or you can use UTC.
+The idea here is to use a "fake UTC", by projecting the date-times from their original timezone (`Europe/Paris`) to UTC, preserving the wall-clock time.
+This will help us with any date-time math in JavaScript, but with the price of introducing a gap and a duplication at the daylight-saving time transitions. 
+
+```{python}
+table_fake_utc = table.with_columns(
+    pl.col(["interval_start", "interval_end"]).map(
+        lambda x: x.dt.replace_time_zone(time_zone="UTC")
+    ),
+)
+```
+
+We publish both the standard and fake-UTC tables:
+
+```{python}
+path_standard = here("data/99-publish/standard")
+os.makedirs(path_standard, exist_ok=True)
+table.write_parquet(f"{path_standard}/flow.parquet")
+```
+
+```{python}
+path_fake_utc = here("data/99-publish/fake-utc")
+os.makedirs(path_fake_utc, exist_ok=True)
+table_fake_utc.write_parquet(f"{path_fake_utc}/flow.parquet")
+```
+
+We also calculate and write out some metadata:
+
+ - `interval_end`: latest observation for each `type`, then aggregated using earliest of these.
+
+```{python}
+interval_end = (
+    table.groupby(pl.col("partner"))
+    .agg(pl.col("interval_end").max())
+    .get_column("interval_end")
+    .min()
+)
+```
+
+We publish this to a metadata file:
+
+```{python}
+dict = {"interval_end": interval_end.isoformat()}
+
+with open(here("data/99-publish/flow-meta.json"), "w") as file:
+    json.dump(dict, file)
+```

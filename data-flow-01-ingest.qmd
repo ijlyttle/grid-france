@@ -131,8 +131,6 @@ response.ok
 
 If the response is OK, write out JSON content to file:
 
-If the response is OK, write out JSON content to file:
-
 ```{python}
 if response.ok:
     array = response.json()["physical_flows"]

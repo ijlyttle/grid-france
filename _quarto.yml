@@ -24,6 +24,12 @@ website:
             href: data-generation-02-transform.qmd 
           - text: Publish
             href: data-generation-99-publish.qmd
+          - text: "---"
+          - text: Flow
+          - text: Ingest
+            href: data-flow-01-ingest.qmd
+          - text: Transform
+            href: data-flow-02-transform.qmd 
 
 format:
   html:

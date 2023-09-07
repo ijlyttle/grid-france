@@ -101,3 +101,35 @@ generation.groupby(pl.col("interval_start")).agg(
 ```
 
 I don't think this was at the end of a API call...
+
+### Flow
+
+```{python}
+flow = pl.read_parquet(here("data/99-publish/standard/flow.parquet"))
+```
+
+Two files parquet files are published, each with the same information:
+
+ - [Standard](/data/99-publish/standard/flow.parquet)
+ - [Fake-UTC](/data/99-publish/fake-utc/flow.parquet)
+
+ The last few observations:
+
+```{python}
+flow.tail()
+```
+
+- `partner`: interchange, usually a country
+- `interval_start`, `interval_end`: date-times describing the interval
+- `flow`: average (?) of power flow, during this interval (MW) - positive means France received power
+
+We count the number of observations and null values for the generation files (will be the same for both):
+
+```{python}
+flow.groupby(pl.col("partner")).agg(
+    pl.col("interval_start").min(),
+    pl.col("interval_end").max(),
+    pl.col("flow_net").count().alias("n_observations"),
+    pl.col("flow_net").null_count().alias("n_value_null"),
+)
+```

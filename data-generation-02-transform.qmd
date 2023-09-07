@@ -85,7 +85,6 @@ table = table_raw.with_columns(
 )
 ```
 
-
 Let's remove duplicate entries:
 
 ```{python}

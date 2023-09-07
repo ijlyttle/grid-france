@@ -38,9 +38,9 @@ with open(here("data/01-ingest/flow.json"), "r") as file:
     array = json.load(file)
 
 file_existing = here("data/99-publish/standard/flow.parquet")
-table_existing = None
+table_existing = pl.DataFrame()
 if os.path.isfile(file_existing):
-    table_existing = pl.read_parquet()
+    table_existing = pl.read_parquet(file_existing)
 ```
 
 We can use Polars to wrangle this data:
@@ -73,6 +73,75 @@ table = (
     )
     .sort(["interval_start"])
 )
+
+table.head(6)
 ```
 
-This gives us a 
+This gives us a tidy table we can work with.
+
+Note that for each time, a country-pair is observed twice, with `sender` and `receiver` reversed. 
+
+```{python}
+table.filter((pl.col("sender") == "Germany") | (pl.col("receiver") == "Germany")).head(
+    6
+)
+```
+
+Note also that for each pair, there is at most one non-zero `flow`, and that `"France"` is always part of the transaction.
+
+We can simplify this table by:
+
+  - combining `sender` and `receiver` into a replacement variable, `partner` (France becomes implied).
+  - we can replace `flow` with `flow_net`, if power is transmitted *to* France it would be positive.
+
+```{python}
+table_net = (
+    table.with_columns(
+        [
+            pl.when(pl.col("sender") == "France")
+            .then(pl.col("receiver"))
+            .otherwise(pl.col("sender"))
+            .alias("partner"),
+            pl.when(pl.col("sender") == "France")
+            .then(-pl.col("flow"))
+            .otherwise(pl.col("flow"))
+            .alias("flow_net"),
+        ]
+    )
+    .groupby(["partner", "interval_start", "interval_end"])
+    .agg([pl.sum("flow_net")])
+    .sort(["interval_start", "partner"])
+)
+
+table_net.head()
+```
+
+Let's combine with the previous results, and remove duplicates:
+
+```{python}
+table_combined = (
+    pl.concat([table_existing, table_net])
+    .unique(subset=["interval_start", "partner"])
+    .sort(by=["interval_start", "partner"])
+)
+```
+
+
+For this table, for each partner, count the observations and null values.
+
+```{python}
+table_combined.groupby(["partner"]).agg(
+    pl.col("interval_start").min(),
+    pl.col("interval_end").max(),
+    pl.col("flow_net").count().alias("n_observations"),
+    pl.col("flow_net").null_count().alias("n_value_null"),
+)
+```
+
+
+Finally, write the result:
+
+```{python}
+table_combined.write_parquet(here("data/02-transform/flow.parquet"))
+```
+
