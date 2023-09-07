@@ -14,17 +14,17 @@ stages:
     # we want to keep the json output in case there was no API call.      
     always_changed: true
 
-  flow-transform:
-    cmd: quarto render data-flow-02-transform.qmd
-    params: 
-      - dvc-params.yaml:
-        - tz_local
-    deps:
-      - data/01-ingest/flow.json
-      - data-flow-02-transform.qmd
-    outs: 
-      - data/02-transform/flow.parquet:
-          persist: true
+  # flow-transform:
+  #   cmd: quarto render data-flow-02-transform.qmd
+  #   params: 
+  #     - dvc-params.yaml:
+  #       - tz_local
+  #   deps:
+  #     - data/01-ingest/flow.json
+  #     - data-flow-02-transform.qmd
+  #   outs: 
+  #     - data/02-transform/flow.parquet:
+  #         persist: true
 
   generation-ingest:
     cmd: quarto render data-generation-01-ingest.qmd
