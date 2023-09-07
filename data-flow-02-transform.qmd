@@ -1,0 +1,77 @@
+---
+title: Generation Transform
+---
+
+The goal of this pipeline is to update a parquet file with generation data from the French grid.
+
+In the **transform** step:
+
+- Parse response saved from the **ingest** step
+- Concatenate with existing parquet files
+- Write parquet files
+
+```{python}
+import os
+import dvc.api
+import json
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
+import requests
+import functools, itertools
+import polars as pl
+from pyprojroot.here import here
+
+```
+
+First, let's read the parameters:
+
+```{python}
+params = dvc.api.params_show("dvc-params.yaml")
+```
+
+Let's load in the results from the previous step. 
+We also load the published results, so that we can append the current results.
+Similar to the **ingest** step, we do not declare this file as a dependency, to avoid circularity.
+
+```{python}
+with open(here("data/01-ingest/flow.json"), "r") as file:
+    array = json.load(file)
+
+file_existing = here("data/99-publish/standard/flow.parquet")
+table_existing = None
+if os.path.isfile(file_existing):
+    table_existing = pl.read_parquet()
+```
+
+We can use Polars to wrangle this data:
+
+```{python}
+table = (
+    pl.DataFrame(array)
+    .select(
+        [
+            pl.col("sender_country_name").alias("sender"),
+            pl.col("receiver_country_name").alias("receiver"),
+            pl.col("values"),
+        ]
+    )
+    .explode("values")  # list of 24 hourly values
+    .unnest("values")  # dict with start_date, end_date, value
+    .drop(["updated_date"])
+    .rename(
+        {"start_date": "interval_start", "end_date": "interval_end", "value": "flow"}
+    )
+    .with_columns(
+        [
+            pl.col("interval_start")
+            .str.strptime(pl.Datetime("ms"))
+            .dt.convert_time_zone(time_zone=params["tz_local"]),
+            pl.col("interval_end")
+            .str.strptime(pl.Datetime("ms"))
+            .dt.convert_time_zone(time_zone=params["tz_local"]),
+        ]
+    )
+    .sort(["interval_start"])
+)
+```
+
