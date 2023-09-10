@@ -13,8 +13,8 @@ stages:
     outs:
     - path: data/01-ingest/generation.json
       hash: md5
-      md5: da45e293d364c1a5b2ce29d94f0b863a
-      size: 4490093
+      md5: 4499052448c41ade45f33bbffbfb9a33
+      size: 4490332
   generation-transform:
     cmd: quarto render data-generation-02-transform.qmd
     deps:
@@ -24,16 +24,16 @@ stages:
       size: 2839
     - path: data/01-ingest/generation.json
       hash: md5
-      md5: da45e293d364c1a5b2ce29d94f0b863a
-      size: 4490093
+      md5: 4499052448c41ade45f33bbffbfb9a33
+      size: 4490332
     params:
       dvc-params.yaml:
         tz_local: Europe/Paris
     outs:
     - path: data/02-transform/generation.parquet
       hash: md5
-      md5: 6d98ea13fbd43ed00a0de3ae271434fc
-      size: 1359363
+      md5: 2a0aea492a8be499ecb346e390ec6067
+      size: 1400732
   generation-publish:
     cmd: sleep 1; quarto render data-generation-99-publish.qmd
     deps:
@@ -43,44 +43,44 @@ stages:
       size: 1849
     - path: data/02-transform/generation.parquet
       hash: md5
-      md5: 6d98ea13fbd43ed00a0de3ae271434fc
-      size: 1359363
+      md5: 2a0aea492a8be499ecb346e390ec6067
+      size: 1400732
     outs:
     - path: data/99-publish/fake-utc/generation.parquet
       hash: md5
-      md5: d3cc3474899a3e2ecbd7372bf02e5fd9
-      size: 1359314
+      md5: 6a7967be6df4dc6f50eca2e4bb9943bf
+      size: 1400685
     - path: data/99-publish/generation-meta.json
       hash: md5
-      md5: d5fcb1ba1d04c2ee62f7fc7db02986b2
+      md5: cb0de6f7cb4a562f998b29b1e86d27cd
       size: 45
     - path: data/99-publish/standard/generation.parquet
       hash: md5
-      md5: 6d98ea13fbd43ed00a0de3ae271434fc
-      size: 1359363
+      md5: 2a0aea492a8be499ecb346e390ec6067
+      size: 1400732
   index:
     cmd: quarto render index.qmd
     deps:
     - path: data/99-publish/fake-utc/flow.parquet
       hash: md5
-      md5: 1170e2ca3f2a032fe12075e6183d652a
-      size: 85645
+      md5: ccdd54189d535eed6e128257da9f0a47
+      size: 93148
     - path: data/99-publish/fake-utc/generation.parquet
       hash: md5
-      md5: d3cc3474899a3e2ecbd7372bf02e5fd9
-      size: 1359314
+      md5: 6a7967be6df4dc6f50eca2e4bb9943bf
+      size: 1400685
     - path: data/99-publish/standard/flow.parquet
       hash: md5
-      md5: 23586515d7b9e9b3183a36459caa8609
-      size: 85679
+      md5: b67ec1763a7626dbaec5a956690a2ed2
+      size: 93179
     - path: data/99-publish/standard/generation.parquet
       hash: md5
-      md5: 6d98ea13fbd43ed00a0de3ae271434fc
-      size: 1359363
+      md5: 2a0aea492a8be499ecb346e390ec6067
+      size: 1400732
     - path: index.qmd
       hash: md5
-      md5: c6cafc7a23a5db00d624dbbbbfea0163
-      size: 4119
+      md5: 1522d0db86902d888a23401d4530666b
+      size: 3773
   flow-ingest:
     cmd: quarto render data-flow-01-ingest.qmd
     deps:
@@ -94,8 +94,8 @@ stages:
     outs:
     - path: data/01-ingest/flow.json
       hash: md5
-      md5: eb3522432172f9dce3c2d8e3af2e0527
-      size: 624264
+      md5: 15fb8c8e47ebbe821e1c3a2fec54e582
+      size: 624151
   flow-transform:
     cmd: quarto render data-flow-02-transform.qmd
     deps:
@@ -105,16 +105,16 @@ stages:
       size: 3872
     - path: data/01-ingest/flow.json
       hash: md5
-      md5: eb3522432172f9dce3c2d8e3af2e0527
-      size: 624264
+      md5: 15fb8c8e47ebbe821e1c3a2fec54e582
+      size: 624151
     params:
       dvc-params.yaml:
         tz_local: Europe/Paris
     outs:
     - path: data/02-transform/flow.parquet
       hash: md5
-      md5: 23586515d7b9e9b3183a36459caa8609
-      size: 85679
+      md5: b67ec1763a7626dbaec5a956690a2ed2
+      size: 93179
   flow-publish:
     cmd: quarto render data-flow-99-publish.qmd
     deps:
@@ -124,18 +124,18 @@ stages:
       size: 1828
     - path: data/02-transform/flow.parquet
       hash: md5
-      md5: 23586515d7b9e9b3183a36459caa8609
-      size: 85679
+      md5: b67ec1763a7626dbaec5a956690a2ed2
+      size: 93179
     outs:
     - path: data/99-publish/fake-utc/flow.parquet
       hash: md5
-      md5: 1170e2ca3f2a032fe12075e6183d652a
-      size: 85645
+      md5: ccdd54189d535eed6e128257da9f0a47
+      size: 93148
     - path: data/99-publish/flow-meta.json
       hash: md5
-      md5: 172d3900d65908353f6b5f40d84ec473
+      md5: 3ff45e73d3ec0958332cf0b67f7297ba
       size: 45
     - path: data/99-publish/standard/flow.parquet
       hash: md5
-      md5: 23586515d7b9e9b3183a36459caa8609
-      size: 85679
+      md5: b67ec1763a7626dbaec5a956690a2ed2
+      size: 93179
