@@ -1,0 +1,58 @@
+---
+title: About - Overview
+execute: 
+  freeze: auto
+---
+
+This experiment is a little bit messy, because I am investigating a bunch of concepts at once. To be clear, this approach is a lot of fun, but it makes writing up the efforts more challenging (no doubt, reading it also becomes more challenging).
+
+In short, this data-engineering pipeline:
+
+-   is run by [GitHub Actions](https://github.com/features/actions) on a daily basis
+-   compiles data offered by the [RTE-France](https://data.rte-france.com/catalog/) (electricity grid) API
+-   publishes the pipeline as a website
+-   offers parquet files that can be imported into other applications
+
+It uses a series of tools:
+
+-   [DVC](https://dvc.org/), data version-control:
+
+    -   manages versions of large data files on remote storage (S3, Blob Storage, etc.), separate from git
+    -   lets you specify the dependencies within the pipeline, e.g. which Quarto files to render
+    -   lets you specify parameters, which also can be used as as dependencies
+
+-   [Quarto](https://quarto.org/), technical publishing:
+
+    -   compiles a series of `.qmd` files - similar in form to `.ipynb` files - into an HTML site
+    -   `.qmd` files contain Markdown for prose, and Python blocks as code, run using a Jupyter kernel
+    -   this site includes the parquet files published from the pipeline
+
+-   [Polars](https://www.pola.rs/), data-frame processing:
+
+    -    within the `.qmd` files, trying this out as an alternative to Pandas
+
+-   [Observable](https://observablehq.com/), data framework:
+
+    -   although not part of this pipeline, an Observable notebook can import the published parquet files into DuckDB, for further querying and visualization.
+
+**Note**: I am not trained as a data engineer; I offer my deepest apologies to my properly-trained colleagues.
+
+## Data pipeline flow
+
+This flowchart is generated using DVC:
+
+```{python}
+# | echo: false
+# | output: asis
+
+import subprocess
+
+# ref: https://github.com/quarto-dev/quarto-cli/discussions/6508
+print("```{mermaid}")
+print(
+    subprocess.run(["dvc", "dag", "--mermaid"], stdout=subprocess.PIPE).stdout.decode(
+        "utf-8"
+    )
+)
+print("```")
+```

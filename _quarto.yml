@@ -30,7 +30,17 @@ website:
             href: data-flow-01-ingest.qmd
           - text: Transform
             href: data-flow-02-transform.qmd 
-
+          - text: Publish
+            href: data-flow-99-publish.qmd  
+      - text: About
+        menu:
+          - text: Overview
+            href: about-overview.qmd
+          - text: DVC
+          - text: Quarto
+          - text: Polars
+          - text: Observable
+            
 format:
   html:
     theme: cosmo

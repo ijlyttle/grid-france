@@ -34,30 +34,10 @@ These allow you access to an application (that you will have to configure on you
 - [Actual Generation](https://data.rte-france.com/catalog/-/api/generation/Actual-Generation/v1.1)
 - [Physical Flow](https://data.rte-france.com/catalog/-/api/exchanges/Physical-Flow/v1.0)
 
-## Data pipeline
-
 
 ```{python}
 import polars as pl
 from pyprojroot.here import here
-import subprocess
-
-```
-
-This flowchart is generated using DVC:
-
-```{python}
-# | echo: false
-# | output: asis
-
-# ref: https://github.com/quarto-dev/quarto-cli/discussions/6508
-print("```{mermaid}")
-print(
-    subprocess.run(["dvc", "dag", "--mermaid"], stdout=subprocess.PIPE).stdout.decode(
-        "utf-8"
-    )
-)
-print("```")
 ```
 
 ### Generation
