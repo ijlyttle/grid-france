@@ -41,6 +41,7 @@ website:
           - text: Quarto
             href: about-quarto.qmd
           - text: Polars
+            href: about-polars.qmd
           - text: Observable
             
 format:

@@ -24,7 +24,7 @@ To render an entire Quarto website, you would make a global render:
 quarto render
 ```
 
-[Quarto's default rendering strategy](https://quarto.org/docs/projects/quarto-projects.html#render-targets) is to render all the files it can find in a directory, generally in alphabetical order. For a data pipeline, we want to render only those files that need updating, and to render in the optimal order. This is where DVC comes in, to determine the execution order.
+[Quarto's default rendering strategy](https://quarto.org/docs/projects/quarto-projects.html#render-targets) is to render all the files it can find within the working directory, generally in alphabetical order. For a data pipeline, we want to render only those files that need updating, and to render in the optimal order. This is where DVC comes in; it uses the dependency graph to determine the execution order.
 
 As a result, we make some adaptations to Quarto:
 
@@ -32,7 +32,11 @@ As a result, we make some adaptations to Quarto:
 -   for files not a part of the data pipeline, we use `freeze: auto`. These are re-rendered if the file has changed.
 -   within the DVC pipeline, each stage has a `render <some-file>.qmd` command. This will render the file regardless.
 
-**TODO** - write about running `quarto render` after `dvc repro` in order to sweep up the published files into the artifact.
+This was discussed in the[ DVC writeup](about-dvc.qmd), a full rendering has two steps:
+
+-   `dvc repro`: run the pipeline according to dependencies
+
+-   `quarto render`: render the other files, compile the website
 
 ### Jupyter notebooks
 
@@ -43,6 +47,6 @@ That said, there are a some important differences:
 -   `.ipynb` files are much more familiar to the general Python community than `.qmd` files (though, the visual editor using the [Quarto extension for VS Code](https://marketplace.visualstudio.com/items?itemName=quarto.quarto) is pretty nice)
 -   `A .ipynb` file renders into itself, then into an HTML file, whereas a `.qmd` file renders into an HTML file without modifying the `.qmd` file. For a DVC pipeline, this distinction is important, because a stage cannot depend on an `.ipynb` file - rendering it changes the file, inducing a circular dependency.
 
-This is why this project uses `.qmd` files, rather than more-familiar `.ipynb` files.
+That `.ipynb` files contain both the source and result is why this project uses `.qmd` files, rather than more-familiar `.ipynb` files.
 
-There is hope, however, for using `.ipynb` files in DVC. There is an [issue at the DVC repo](https://github.com/iterative/dvc/issues/3439#issuecomment-663873682) asking about the possibility to filter a source file to determine the dependency. In our case we would want to filter to keep all the code cells in a notebook, possibly using `nbconvert`.
+There is hope, however, for using `.ipynb` files in DVC. There is an [issue at the DVC repo](https://github.com/iterative/dvc/issues/3439#issuecomment-663873682) asking about the possibility to filter a source file to determine the dependency. In our case, we would want to filter to keep all the code cells in a notebook, possibly using `nbconvert`. Unfortunately, this issue has not been updated since July 2020.

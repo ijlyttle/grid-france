@@ -1,0 +1,166 @@
+---
+title: About Polars
+execute: 
+  freeze: auto
+---
+
+I have been interested to try out [Polars](https://www.pola.rs/) for some time now; it advertises "blazingly-fast" performance and is built on the Arrow ecosystem.
+
+To be clear, the pipeline here does not require blazingly-fast performance, the data is small enough that I don't think I could tell. Instead, my goal is to see if I can wrap my head around the Polars API. Most of my experience is with R's [dplyr](https://dplyr.tidyverse.org/), some small experience with SQL, JS toolsets [arquero](https://uwdata.github.io/arquero) and [tidyjs](https://pbeshai.github.io/tidy/) (inspired by dplyr).
+
+Confession: I don't really know Pandas. I understand that indexes are an important feature of Pandas; [Polars does not use indexes](https://pola-rs.github.io/polars-book/user-guide/migration/pandas/#polars-does-not-have-a-multi-indexindex) (nor does dplyr). Thus, part of my enthusiasm for Polars may come from avoiding having to learn indexes (or unlearn them if I were coming from Pandas).
+
+In short, I found I was able to do what I wanted to using Polars. Admittedly, I am not doing much, yet - but it was reassuring to make it this far.
+
+For those coming from tidyverse, keep in mind that Polars runs `mutate()`-like calls in parallel. You might be accustomed to this:
+
+``` r
+library("dplyr")
+
+table <- 
+  mtcars |>
+  mutate(
+    wt_metric_ton = wt / 2.205,
+    wt_kg = wt_metric_ton * 1000
+  )
+```
+
+In Polars, you would need separate calls:
+
+``` python
+import polars as pl
+
+url = "https://gist.githubusercontent.com/ZeccaLehn/4e06d2575eb9589dbe8c365d61cb056c/raw/64f1660f38ef523b2a1a13be77b002b98665cdfe/mtcars.csv"
+
+table = (
+    pl.read_csv(url)
+    .with_columns([(pl.col("wt") / 2.205).alias("wt_metric_ton")])
+    .with_columns([(pl.col("wt_metric_ton") * 1000).alias("wt_kg")])
+)
+```
+
+I appreciate the succinctness of dplyr and tidyverse, but I am coming to appreciate that the Polars API is consistent, if necessarily verbose.
+
+## Unpackaing API responses
+
+Each branch of the pipeline starts with an API call to get more-recent data, saved as a JSON file; this is the **ingest** step. In the **transform** step, the JSON is parsed as into a Python list, then wrangled into a standard tabular form.
+
+As I am still finding my way in Python, I ended up using different approaches for each of the "generation" and "flow" stages.
+
+### Generation
+
+Here is an excerpt for the response from the generation API:
+
+``` json
+[
+  {
+    "start_date": "2018-04-08T00:00:00+02:00", 
+    "end_date": "2018-04-22T00:00:00+02:00", 
+    "production_type": "BIOENERGY", 
+    "production_subtype": "BIOGAS", 
+    "values": [
+      {
+        "start_date": "2018-04-08T00:00:00+02:00", 
+        "end_date": "2018-04-08T00:15:00+02:00", 
+        "updated_date": "2018-04-08T23:53:25+02:00", 
+        "value": 222
+      }
+    ]
+  }
+]
+```
+
+This is *heavily* edited. Each "row" in the response corresponds to one date for one production-type. Within each row is another data-frame-like structure for each 15-minute interval.
+
+My approach here was to use functional programming tools, like `map()` and `reduce()`, to get things into a Python list with one entry for each combination of production-type and interval:
+
+``` python
+by_type = list(
+    map(
+        lambda x: list(
+            map(
+                lambda v: {
+                    "type": x["production_type"],
+                    "interval_start": v["start_date"],
+                    "interval_end": v["end_date"],
+                    "generation": v["value"],
+                },
+                x["values"],
+            )
+        ),
+        array,
+    )
+)
+
+fixed = functools.reduce(itertools.chain, by_type)
+```
+
+This resulted in a list that looked like this, of course with many more observations:
+
+``` json
+[
+  {
+    "type": "BIOENERGY",
+    "interval_start": "2018-04-08T00:00:00+02:00"
+    "interval_end": "2018-04-08T00:15:00+02:00"
+    "generation": 222
+  }
+]
+```
+
+At this point, I could import such a list into a Polars `DataFrame`, then parse the date-times, etc.
+
+### Flow
+
+The flow API returns a similar sort of response - again, heavily edited:
+
+``` json
+[
+  {
+    "start_date": "2017-06-17T00:00:00+02:00", 
+    "end_date": "2017-06-18T00:00:00+02:00", 
+    "sender_country_eic_code": "10YCB-GERMANY--8", 
+    "sender_country_name": "Germany", 
+    "receiver_country_eic_code": "10YFR-RTE------C", 
+    "receiver_country_name": "France", 
+    "values": [
+      {
+        "start_date": "2017-06-17T00:00:00+02:00", 
+        "end_date": "2017-06-17T01:00:00+02:00", 
+        "value": 320, 
+        "updated_date": "2017-06-17T00:00:00+02:00"
+      }
+    ]
+  }
+]
+```
+
+For this one, I decided to try a different approach. I decided to try to import the whole thing into a Polars `DataFrame`, which worked.
+
+This presented a couple of challenges for which Polars presented straightforward solutions:
+
+-   the [.explode() method](https://pola-rs.github.io/polars/py-polars/html/reference/dataframe/api/polars.DataFrame.explode.html) is used to promote the `"value"` elements to the top level, repeating the outer entries.
+-   the [`.unnest()` method](https://pola-rs.github.io/polars/py-polars/html/reference/dataframe/api/polars.DataFrame.unnest.html) is used to spread the `"value"` entries into their own top-level columns.
+
+Maybe another way to put it: `.explode()` expands the square-bracket elements, `[]`, vertically; `.unnest()` expands the curly-bracket elements, `{}`, horizontally.
+
+``` python
+table = (
+    pl.DataFrame(array)
+    .select(
+        [
+            pl.col("sender_country_name").alias("sender"),
+            pl.col("receiver_country_name").alias("receiver"),
+            pl.col("values"),
+        ]
+    )
+    .explode("values") # list of 24 hourly values
+    .unnest("values")  # dict with start_date, end_date, value
+    .drop(["updated_date"])
+    .rename(
+        {"start_date": "interval_start", "end_date": "interval_end", "value": "flow"}
+    )
+)
+```
+
+Of course, such methods are available in tidyverse, and I am certain in Pandas, too. It was reassuring to see this in Polars.
