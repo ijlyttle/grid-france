@@ -27,7 +27,9 @@ stages:
           persist: true
 
   flow-publish:
-    cmd: quarto render data-flow-99-publish.qmd
+    # todo: why do I need to "sleep"?
+    #  - ERROR: NotFound: No such file or directory (os error 2), stat '/Users/ijlyttle/repos/public/grid-france/index_files'
+    cmd: sleep 1; quarto render data-flow-99-publish.qmd
     deps:
       - data/02-transform/flow.parquet
       - data-flow-99-publish.qmd
