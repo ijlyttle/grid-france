@@ -1,0 +1,163 @@
+---
+title: About DVC
+execute: 
+  freeze: auto
+---
+
+DVC is an acronym for "data version control" - it's an open-source project. In this context, DVC is helping with three tasks:
+
+-   specifying dependencies within the pipeline, e.g. which Quarto files to render
+-   managing parameters, which can
+-   managing versions of large data files on remote storage
+
+Although it runs using Python, it does not require that what it runs use Python. In other words, it's agnostic about languages used in the pipeline.
+
+## Pipeline dependencies
+
+A DVC pipeline includes a series of [stages](https://dvc.org/doc/user-guide/project-structure/dvcyaml-files), the dependencies between the stages form a directed acyclic graph (DAG).
+
+Here's a flowchart for this pipeline's stages, generated using DVC:
+
+```{python}
+# | echo: false
+# | output: asis
+
+import subprocess
+
+# ref: https://github.com/quarto-dev/quarto-cli/discussions/6508
+print("```{mermaid}")
+print(
+    subprocess.run(["dvc", "dag", "--mermaid"], stdout=subprocess.PIPE).stdout.decode(
+        "utf-8"
+    )
+)
+print("```")
+```
+
+Stages are defined in a `dvc.yaml` file, here's an exerpt:
+
+``` yaml
+stages:
+
+  # more stages before and after this one
+  flow-transform:
+    cmd: quarto render data-flow-02-transform.qmd
+    params: 
+      - dvc-params.yaml:
+        - tz_local
+    deps:
+      - data/01-ingest/flow.json
+      - data-flow-02-transform.qmd
+    outs: 
+      - data/02-transform/flow.parquet:
+          persist: true
+```
+
+You can see that we declare:
+
+-   the command to run, if needed
+-   parameters used
+-   file dependencies
+-   file outputs
+
+Each stage in a pipeline has its own yaml entry. We have to declare each dependency explicitly, independently from the code in the `.qmd` file.
+
+::: callout-note
+As I understand, this is different from how the R package [**targets**](https://books.ropensci.org/targets/walkthrough.html) works; there the dependencies are deduced from `targets` calls within `.qmd` files. In this sense, the `targets` approach seems less duplicative, less brittle. That said, `targets` is designed for R only.
+:::
+
+As a result of DVC "managing" the dependencies, DVC also "manages" the computational part of rendering process. To run the pipeline, you (or GitHub Actions) would:
+
+``` bash
+dvc repro
+```
+
+::: callout-note
+I'll talk about this more in the [Quarto section](about-quarto.qmd): for those who have some experience with Quarto, I specify in `_quarto.yml`:
+
+``` yaml
+execute: 
+  freeze: true
+```
+
+Then, for `.qmd` files, like this one, that are not part of the pipeline, I specify:
+
+``` yaml
+execute: 
+  freeze: auto
+```
+
+Using the [`freeze` option](https://quarto.org/docs/projects/code-execution.html#freeze) this way, when I (or GitHub Actions) run `quarto render`, the pipeline will not run, but the website will be built.
+:::
+
+## Parameters
+
+DVC offers ways to manage [stage-level parameters](https://dvc.org/doc/user-guide/project-structure/dvcyaml-files#parameters) as part of a pipeline. The `dvc.api` package lets you access parameters from within your `.qmd` file, with a call like:
+
+``` python
+params = dvc.api.params_show("dvc-params.yaml")
+```
+
+This is a python package; using it violates the principle of DVC not caring about what language you use in the pipeline. That said, I *think* that you could manage this from within the pipeline by reading the YAML file using the language of your choice. The dependency on the given parameter,`tz_local` in this case, is declared in `dvc.yaml`.
+
+This is my *first* DVC pipeline, I have used only Python, so `¯\_(ツ)_/¯ alt="shrug"`.
+
+## Remote storage
+
+This is the feature that first piqued my interest. DVC supports [remote storage ](https://dvc.org/doc/user-guide/data-management/remote-storage)on AWS S3, Azure Blob Storage, and many other platforms. This makes things easier to share data, in a principled way, among collaborators.
+
+In this case, I am "collaborating" with GitHub Actions to fill the historical data for generation and flow-exchanges for the French electrical grid. Each API call covers two weeks; I have a GitHub Action with a daily schedule-trigger.
+
+You should consult the DVC documentation to set up your own remote storage. The purpose of this section is to give my impression of how things work, and how DVC remote storage fits into a git-based workflow.
+
+I think of DVC remote storage as "git-remotes", but for data. The metadata describing the data that *should* be available is part of a regular git repository. For example:
+
+-   `dvc.lock` contains metadata (hashes, etc.) on all the dependencies and outputs, many of these live in the `data/` directory
+
+-   `.dvc/config` contains information on the remotes (but not the authentication), e.g.:
+
+    ``` gitconfig
+    [core]
+        remote = datastore
+    ['remote "datastore"']
+        url = s3://ijlyttle-grid-france
+    ```
+
+The `data/` directory is largely git-ignored. The metadata on these files is stored in `dvc.lock`, DVC will know what to do.
+
+A workflow might look something like this:
+
+``` bash
+git pull
+dvc pull
+
+dvc repro # run the pipeline
+quarto render # render the rest of the website
+quarto publish # deploy the website
+
+git commit -am "Automated report"
+git push
+dvc push
+```
+
+In this example, we do not use the equivalent of `git add` for DVC, because the pipeline-definition file `dvc.yaml` has taken care of it for us.
+
+## Jardinage
+
+The French word for "gardening", a happier way to refer to maintenance.
+
+Each time the pipeline runs, DVC caches all the files it uses; with remote storage, this could potentially incur non-trivial storage costs. For this pipeline, each run produces a couple of MB - not too bad. At some point, I will like to prune the cache on my remote storage, DVC offers a [clear-cache utility](https://dvc.org/doc/command-reference/gc#cleaning-shared-cache-or-remote); it can filter by date.
+
+Me writing this here is meant as a reminder to myself to get this done, and documented, in the next little while.
+
+## Perspective on pins
+
+Pins is a set of packages: [pins for R](https://pins.rstudio.com/) and [pins for Python](https://rstudio.github.io/pins-python/?_gl=1*mhjoml*_ga*MzY0NTAzNDEzLjE2OTI5NzgyODE.*_ga_2C0WZ1JHG0*MTY5NDM5MzA4NS43LjAuMTY5NDM5MzA4NS4wLjAuMA..), developed and maintained by Posit. Using pins is where I first started to think about management of remote data-sets. When I started learning about DVC, many of the concepts were already familiar, thanks to pins.
+
+In my view, there is an important architectural difference between DVC and pins:
+
+-   pins functions are called from the code "inside" the pipeline; they are concerned with fetching and pushing remote data.
+
+-   DVC is invoked "outside" the pipeline; it puts the pieces into place before and after the pipeline is run.
+
+Of course this distinction ignores the `dvc.api` calls mentioned above. That said, because DVC runs "outside" the pipeline, it can be agnostic about the language used within it, so long as Python and the `dvc` package are available.

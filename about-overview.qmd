@@ -1,5 +1,5 @@
 ---
-title: About - Overview
+title: "About: Overview"
 execute: 
   freeze: auto
 ---
@@ -15,11 +15,11 @@ In short, this data-engineering pipeline:
 
 It uses a series of tools:
 
--   [DVC](https://dvc.org/), data version-control:
+-   [DVC](https://dvc.org/), data version-control ([application here](about-dvc.qmd)):
 
-    -   manages versions of large data files on remote storage (S3, Blob Storage, etc.), separate from git
     -   lets you specify the dependencies within the pipeline, e.g. which Quarto files to render
     -   lets you specify parameters, which also can be used as as dependencies
+    -   manages versions of large data files on remote storage (S3, Blob Storage, etc.), separate from git
 
 -   [Quarto](https://quarto.org/), technical publishing:
 
@@ -36,23 +36,3 @@ It uses a series of tools:
     -   although not part of this pipeline, an Observable notebook can import the published parquet files into DuckDB, for further querying and visualization.
 
 **Note**: I am not trained as a data engineer; I offer my deepest apologies to my properly-trained colleagues.
-
-## Data pipeline flow
-
-This flowchart is generated using DVC:
-
-```{python}
-# | echo: false
-# | output: asis
-
-import subprocess
-
-# ref: https://github.com/quarto-dev/quarto-cli/discussions/6508
-print("```{mermaid}")
-print(
-    subprocess.run(["dvc", "dag", "--mermaid"], stdout=subprocess.PIPE).stdout.decode(
-        "utf-8"
-    )
-)
-print("```")
-```

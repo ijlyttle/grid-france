@@ -37,7 +37,9 @@ website:
           - text: Overview
             href: about-overview.qmd
           - text: DVC
+            href: about-dvc.qmd
           - text: Quarto
+            href: about-quarto.qmd
           - text: Polars
           - text: Observable
             
