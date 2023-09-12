@@ -5,26 +5,26 @@ date: today
 date-format: iso
 ---
 
-The goal of this project is to execute and document a data pipeline for aspects of the French electrical grid.
-These are data made available publicly via [APIs from RTE France](https://data.rte-france.com/).
+The goal of this project is to execute and document a data pipeline for aspects of the French electrical grid. These are data made available publicly via [APIs from RTE France](https://data.rte-france.com/).
 
-I understand [RTE France's terms and conditions](https://data.rte-france.com/cgu) allow for republication, so long as the data are credited to RTE France, and are not distorted. 
+I understand [RTE France's terms and conditions](https://data.rte-france.com/cgu) allow for republication, so long as the data are credited to RTE France, and are not distorted.
 
 When finished, this site will publish tables as parquet files:
 
-- generation sources, e.g. wind, solar
-- exchanges with other countries, e.g. England, Belgium
-- outdoor temperature in Paris (I know there's more to France than Paris), not yet implemented
+-   generation sources, e.g. wind, solar
+-   exchanges with other countries, e.g. England, Belgium
+-   outdoor temperature in Paris (I know there's more to France than Paris), not yet implemented
 
-Using GitHub Actions, these tables are updated daily.
+This will also be an opportunity for me to develop my skills with:
 
-This will also be an opportunity for me to learn to use:
+-   [Polars](https://www.pola.rs/): alternative to Pandas
+-   [DVC](https://dvc.org/): pipeline orchestration and remote data management
+-   [Quarto](https://quarto.org/): technical publishing (this website)
+-   [GitHub Actions](https://github.com/features/actions): run the pipeline on a schedule
 
-- [Polars](https://www.pola.rs/)
-- [DVC](https://dvc.org/)
-- [Quarto](https://quarto.org/) using Python with `.qmd` files
+I am also developing an [Observable notebook](https://observablehq.com/@ijlyttle/french-electricity-grid) to be a consumer of this pipeline.
 
-There are two sections you can access from the menu bar: the **pipeline** section contains the files in the pipeline; the **about** section has a little more material how this pipeline was put together. 
+There are two sections you can access from the menu bar: the **pipeline** section contains the files in the pipeline; the **about** section has a little more material how this pipeline was put together.
 
 ## Data
 
@@ -35,6 +35,8 @@ import polars as pl
 from pyprojroot.here import here
 ```
 
+Each API call to fetch data from RTE France contains, at most, two weeks of data. The pipeline runs on a daily schedule, so it will take a number of days before the pipeline "catches up" to the present day.
+
 ### Generation
 
 ```{python}
@@ -43,8 +45,10 @@ generation = pl.read_parquet(here("data/99-publish/standard/generation.parquet")
 
 Two files parquet files are published, each with the same information:
 
- - [Standard](/data/99-publish/standard/generation.parquet)
- - [Fake-UTC](/data/99-publish/fake-utc/generation.parquet)
+-   [Standard](/data/99-publish/standard/generation.parquet)
+-   [Fake-UTC](/data/99-publish/fake-utc/generation.parquet)
+
+Because of JavaScript's current timezone-limitations ([soon to be solved](https://github.com/tc39/proposal-temporal)), I am writing a version of the data where the date-times are projected into UTC, preserving the wall-clock time; these are the *fake-UTC* data.
 
 The last few observations:
 
@@ -52,9 +56,9 @@ The last few observations:
 generation.tail()
 ```
 
-- `type`: type of generation
-- `interval_start`, `interval_end`: date-times describing the interval
-- `generation`: average (?) of generation during this interval (MW)
+-   `type`: type of generation
+-   `interval_start`, `interval_end`: date-times describing the interval
+-   `generation`: average (?) of generation during this interval (MW)
 
 We count the number of observations and null values for the generation files (will be the same for both):
 
@@ -85,18 +89,18 @@ flow = pl.read_parquet(here("data/99-publish/standard/flow.parquet"))
 
 Two files parquet files are published, each with the same information:
 
- - [Standard](/data/99-publish/standard/flow.parquet)
- - [Fake-UTC](/data/99-publish/fake-utc/flow.parquet)
+-   [Standard](/data/99-publish/standard/flow.parquet)
+-   [Fake-UTC](/data/99-publish/fake-utc/flow.parquet)
 
- The last few observations:
+The last few observations:
 
 ```{python}
 flow.tail()
 ```
 
-- `partner`: interchange, usually a country
-- `interval_start`, `interval_end`: date-times describing the interval
-- `flow`: average (?) of power flow, during this interval (MW) - positive means France received power
+-   `partner`: interchange, usually a country
+-   `interval_start`, `interval_end`: date-times describing the interval
+-   `flow`: average (?) of power flow, during this interval (MW) - positive means France received power
 
 We count the number of observations and null values for the generation files (will be the same for both):
 
@@ -113,12 +117,11 @@ flow.groupby(pl.col("partner")).agg(
 
 To interact with the APIs and data-storage, the code in this report will expect certain environment variables to be set:
 
-- `AWS_ACCESS_KEY_ID`, `AWS_ACCESS_KEY_SECRET`: can also be set using `aws cli`
-  - if you clone this repo, you will likely need to configure your own remote storage.
-
-- `RTE_FRANCE_BASE64` base-64 encoding available from RTE application-page
+-   `AWS_ACCESS_KEY_ID`, `AWS_ACCESS_KEY_SECRET`: can also be set using `aws cli`
+    -   if you clone this repo, you will likely need to configure your own remote storage.
+-   `RTE_FRANCE_BASE64` base-64 encoding available from RTE application-page
 
 These allow you access to an application (that you will have to configure on your RTE France account); this application will need access to these APIs:
 
-- [Actual Generation](https://data.rte-france.com/catalog/-/api/generation/Actual-Generation/v1.1)
-- [Physical Flow](https://data.rte-france.com/catalog/-/api/exchanges/Physical-Flow/v1.0)
+-   [Actual Generation](https://data.rte-france.com/catalog/-/api/generation/Actual-Generation/v1.1)
+-   [Physical Flow](https://data.rte-france.com/catalog/-/api/exchanges/Physical-Flow/v1.0)

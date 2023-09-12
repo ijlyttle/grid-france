@@ -101,8 +101,8 @@ This resulted in a list that looked like this, of course with many more observat
 [
   {
     "type": "BIOENERGY",
-    "interval_start": "2018-04-08T00:00:00+02:00"
-    "interval_end": "2018-04-08T00:15:00+02:00"
+    "interval_start": "2018-04-08T00:00:00+02:00",
+    "interval_end": "2018-04-08T00:15:00+02:00",
     "generation": 222
   }
 ]
