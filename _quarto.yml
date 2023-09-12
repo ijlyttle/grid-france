@@ -43,8 +43,13 @@ website:
           - text: Polars
             href: about-polars.qmd
           - text: Observable
-            href: about-observable.qmd   
-                  
+            href: about-observable.qmd  
+    right: 
+      - icon: github
+        href: https://github.com/ijlyttle/grid-france
+        aria-label: GitHub repository
+
+
 format:
   html:
     theme: cosmo
