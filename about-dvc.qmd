@@ -104,7 +104,7 @@ This is my *first* DVC pipeline, I have used only Python, so `¯\_(ツ)_/¯ alt=
 
 ## Remote storage
 
-This is the feature that first piqued my interest. DVC supports [remote storage ](https://dvc.org/doc/user-guide/data-management/remote-storage)on AWS S3, Azure Blob Storage, and many other platforms. This makes things easier to share data, in a principled way, among collaborators.
+This is the feature that first piqued my interest. DVC supports [remote storage ](https://dvc.org/doc/user-guide/data-management/remote-storage) on AWS S3, Azure Blob Storage, and many other platforms. This makes things easier to share data, in a principled way, among collaborators.
 
 In this case, I am "collaborating" with GitHub Actions to fill the historical data for generation and flow-exchanges for the French electrical grid. Each API call covers two weeks; I have a GitHub Action with a daily schedule-trigger.
 
