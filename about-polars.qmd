@@ -10,8 +10,6 @@ To be clear, the pipeline here does not require blazingly-fast performance, the 
 
 Confession: I don't really know Pandas. I understand that indexes are an important feature of Pandas; [Polars does not use indexes](https://pola-rs.github.io/polars-book/user-guide/migration/pandas/#polars-does-not-have-a-multi-indexindex) (nor does dplyr). Thus, part of my enthusiasm for Polars may come from avoiding having to learn indexes (or unlearn them if I were coming from Pandas).
 
-In short, I found I was able to do what I wanted to using Polars. Admittedly, I am not doing much, yet - but it was reassuring to make it this far.
-
 For those coming from tidyverse, keep in mind that Polars runs `mutate()`-like calls in parallel. You might be accustomed to this:
 
 ``` r
@@ -40,6 +38,8 @@ table = (
 ```
 
 I appreciate the succinctness of dplyr and tidyverse, but I am coming to appreciate that the Polars API is consistent, if necessarily verbose.
+
+In short, I found I was able to do what I wanted to using Polars. Admittedly, I am not doing much, yet - but it was reassuring to make it this far.
 
 ## Unpackaing API responses
 

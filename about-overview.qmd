@@ -15,7 +15,7 @@ In short, this data-engineering pipeline:
 
 It uses a series of tools:
 
--   [DVC](https://dvc.org/), data version-control ([application here](about-dvc.qmd)):
+-   [DVC](https://dvc.org/), data version-control:
 
     -   lets you specify the dependencies within the pipeline, e.g. which Quarto files to render
     -   lets you specify parameters, which also can be used as as dependencies
@@ -29,10 +29,38 @@ It uses a series of tools:
 
 -   [Polars](https://www.pola.rs/), data-frame processing:
 
-    -    within the `.qmd` files, trying this out as an alternative to Pandas
+    -   within the `.qmd` files, trying this out as an alternative to Pandas
 
 -   [Observable](https://observablehq.com/), data framework:
 
     -   although not part of this pipeline, an Observable notebook can import the published parquet files into DuckDB, for further querying and visualization.
 
 **Note**: I am not trained as a data engineer; I offer my deepest apologies to my properly-trained colleagues.
+
+## Repository configuration
+
+If you want a better idea of how this pipeline works, you might find these links to the source files useful:
+
+-   [`dvc.yaml`](https://github.com/ijlyttle/grid-france/blob/main/dvc.yaml):
+
+    Specifies the pipeline: the dependencies, commands, and outputs for each stage.
+
+-   [`dvc-params.yaml`](https://github.com/ijlyttle/grid-france/blob/main/dvc.yaml)
+
+    A place to store parameters for your pipeline; these can be treated as dependencies.
+
+-   [`.dvc/config`](https://github.com/ijlyttle/grid-france/blob/main/.dvc/config)
+
+    Specifies the location of the data remote. In this case it's an S3 bucket, but DVC also supports Azure, and other platforms.
+
+-   [`_quarto.yml`](https://github.com/ijlyttle/grid-france/blob/main/_quarto.yml)
+
+    Specifies the layout of this website, as well as the files that should be published as a part of the website
+
+-   [`index.qmd`](https://github.com/ijlyttle/grid-france/blob/main/index.qmd)
+
+    "Quarto Markdown" files are like Jupyter notebooks; they contain both code and prose. This file is for the [front page](index.qmd) of this website.
+
+-   [`.github/wokflows/quarto-render.yml`](https://github.com/ijlyttle/grid-france/blob/main/.github/workflows/quarto-render.yml)
+
+    This GitHub Actions workflow runs the pipeline nightly. Among other steps, it calls `dvc repro`, which renders the `.qmd` files that are in the pipeline. It then calls `quarto render` which renders the `.qmd` files not in the pipeline, then compiles the website. We use a Quarto option to exclude the pipeline `.qmd` files from the global `quarto render` call.

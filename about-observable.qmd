@@ -1,0 +1,11 @@
+---
+title: "About Observable"
+execute: 
+  freeze: auto
+---
+
+Observable is where I want to consume this data, to create interactive visualizations.
+
+I have a [notebook](https://observablehq.com/d/417fe349a7d31d54) where I can download the published parquet files into a DuckDB database that runs in the notebook (in the browser).
+
+One thing to consider about Observable is that if files imported into a notebook are served from a network inside a firewall, and the browser outside the firewall, there is no way for the notebook to access the data.

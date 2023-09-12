@@ -1,8 +1,11 @@
 ---
 title: France Grid
+author: Ian Lyttle
+date: today
+date-format: iso
 ---
 
-The goal of this repository is to execute and document a data pipeline for aspects of the French electrical grid.
+The goal of this project is to execute and document a data pipeline for aspects of the French electrical grid.
 These are data made available publicly via [APIs from RTE France](https://data.rte-france.com/).
 
 I understand [RTE France's terms and conditions](https://data.rte-france.com/cgu) allow for republication, so long as the data are credited to RTE France, and are not distorted. 
@@ -11,29 +14,21 @@ When finished, this site will publish tables as parquet files:
 
 - generation sources, e.g. wind, solar
 - exchanges with other countries, e.g. England, Belgium
-- outdoor temperature in Paris (I know there's more to France than Paris)
+- outdoor temperature in Paris (I know there's more to France than Paris), not yet implemented
 
-Using GitHub Actions, these tables will be updated daily.
+Using GitHub Actions, these tables are updated daily.
 
 This will also be an opportunity for me to learn to use:
 
-- [Requests](https://requests.readthedocs.io/en/latest/)
 - [Polars](https://www.pola.rs/)
 - [DVC](https://dvc.org/)
 - [Quarto](https://quarto.org/) using Python with `.qmd` files
 
-## Secrets
+There are two sections you can access from the menu bar: the **pipeline** section contains the files in the pipeline; the **about** section has a little more material how this pipeline was put together. 
 
-To interact with the APIs and data-storage, the code in this report will expect certain environment variables to be set:
+## Data
 
-- `AWS_ACCESS_KEY_ID`, `AWS_ACCESS_KEY_SECRET`: can also be set using `aws cli`
-- `RTE_FRANCE_BASE64` base-64 encoding available from RTE application-page
-
-These allow you access to an application (that you will have to configure on your RTE France account); this application will need access to these APIs:
-
-- [Actual Generation](https://data.rte-france.com/catalog/-/api/generation/Actual-Generation/v1.1)
-- [Physical Flow](https://data.rte-france.com/catalog/-/api/exchanges/Physical-Flow/v1.0)
-
+In this section, we summarize the published data, as of the last run of the pipeline.
 
 ```{python}
 import polars as pl
@@ -113,3 +108,17 @@ flow.groupby(pl.col("partner")).agg(
     pl.col("flow_net").null_count().alias("n_value_null"),
 )
 ```
+
+## Secrets
+
+To interact with the APIs and data-storage, the code in this report will expect certain environment variables to be set:
+
+- `AWS_ACCESS_KEY_ID`, `AWS_ACCESS_KEY_SECRET`: can also be set using `aws cli`
+  - if you clone this repo, you will likely need to configure your own remote storage.
+
+- `RTE_FRANCE_BASE64` base-64 encoding available from RTE application-page
+
+These allow you access to an application (that you will have to configure on your RTE France account); this application will need access to these APIs:
+
+- [Actual Generation](https://data.rte-france.com/catalog/-/api/generation/Actual-Generation/v1.1)
+- [Physical Flow](https://data.rte-france.com/catalog/-/api/exchanges/Physical-Flow/v1.0)

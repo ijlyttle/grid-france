@@ -43,7 +43,8 @@ website:
           - text: Polars
             href: about-polars.qmd
           - text: Observable
-            
+            href: about-observable.qmd   
+                  
 format:
   html:
     theme: cosmo
