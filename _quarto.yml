@@ -49,7 +49,6 @@ website:
         href: https://github.com/ijlyttle/grid-france
         aria-label: GitHub repository
 
-
 format:
   html:
     theme: cosmo
