@@ -13,8 +13,8 @@ stages:
     outs:
     - path: data/01-ingest/generation.json
       hash: md5
-      md5: 07d395d92e9c8a95d76166003d86c687
-      size: 4490559
+      md5: fb800724dec746f99b523948d67e7a8b
+      size: 4491584
   generation-transform:
     cmd: quarto render data-generation-02-transform.qmd
     deps:
@@ -24,16 +24,16 @@ stages:
       size: 2839
     - path: data/01-ingest/generation.json
       hash: md5
-      md5: 07d395d92e9c8a95d76166003d86c687
-      size: 4490559
+      md5: fb800724dec746f99b523948d67e7a8b
+      size: 4491584
     params:
       dvc-params.yaml:
         tz_local: Europe/Paris
     outs:
     - path: data/02-transform/generation.parquet
       hash: md5
-      md5: f438e3e744ae2c0a5013286eb8a5f03f
-      size: 3733178
+      md5: 7971fd80948ab1463c8f51987986bba1
+      size: 3775852
   generation-publish:
     cmd: sleep 1; quarto render data-generation-99-publish.qmd
     deps:
@@ -43,21 +43,21 @@ stages:
       size: 1849
     - path: data/02-transform/generation.parquet
       hash: md5
-      md5: f438e3e744ae2c0a5013286eb8a5f03f
-      size: 3733178
+      md5: 7971fd80948ab1463c8f51987986bba1
+      size: 3775852
     outs:
     - path: data/99-publish/fake-utc/generation.parquet
       hash: md5
-      md5: 18019f7229b0a07b24b519d454d9bc52
-      size: 3733148
+      md5: 7406ebdde48b07c5d0fe65930c9d773d
+      size: 3775846
     - path: data/99-publish/generation-meta.json
       hash: md5
-      md5: c57217ea514b67b6271f64cd10f4b638
+      md5: 03103c8d33dc9ad47c9c75f5893ce591
       size: 45
     - path: data/99-publish/standard/generation.parquet
       hash: md5
-      md5: f438e3e744ae2c0a5013286eb8a5f03f
-      size: 3733178
+      md5: 7971fd80948ab1463c8f51987986bba1
+      size: 3775852
   index:
     cmd: quarto render index.qmd
     deps:
@@ -67,16 +67,16 @@ stages:
       size: 104932
     - path: data/99-publish/fake-utc/generation.parquet
       hash: md5
-      md5: 18019f7229b0a07b24b519d454d9bc52
-      size: 3733148
+      md5: 7406ebdde48b07c5d0fe65930c9d773d
+      size: 3775846
     - path: data/99-publish/standard/flow.parquet
       hash: md5
       md5: 313d518b5e2dac322bce511defc95860
       size: 104967
     - path: data/99-publish/standard/generation.parquet
       hash: md5
-      md5: f438e3e744ae2c0a5013286eb8a5f03f
-      size: 3733178
+      md5: 7971fd80948ab1463c8f51987986bba1
+      size: 3775852
     - path: index.qmd
       hash: md5
       md5: 6a4d0052bbbba67806f3b2b578ab2e33
