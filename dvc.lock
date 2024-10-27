@@ -13,8 +13,8 @@ stages:
     outs:
     - path: data/01-ingest/generation.json
       hash: md5
-      md5: b92eadb07150713407b892722a41121b
-      size: 3673599
+      md5: 1e3b8fcfb3d6251247776821561d3f47
+      size: 3658012
   generation-transform:
     cmd: quarto render data-generation-02-transform.qmd
     deps:
@@ -24,8 +24,8 @@ stages:
       size: 2839
     - path: data/01-ingest/generation.json
       hash: md5
-      md5: b92eadb07150713407b892722a41121b
-      size: 3673599
+      md5: 1e3b8fcfb3d6251247776821561d3f47
+      size: 3658012
     params:
       dvc-params.yaml:
         tz_local: Europe/Paris
